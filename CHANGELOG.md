@@ -34,3 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Gold Triangle Arrow Collapse Button (`Sidebar.lua`)**: Replaced the text button with a gold/yellow triangle arrow button at the inner bottom-left corner of the map canvas, pointing RIGHT (`>`) to collapse the drawer and pointing LEFT (`<`) to expand.
 - **Fish Species Database (`Data/ZoneData.lua`, `Sidebar.lua`)**: Cataloged local fish species and skill requirements for all Classic zones.
 - **Coordinates De-duplication (`Sidebar.lua`, `Coordinates.lua`)**: Kept coordinates exclusively in the high-contrast black pill box on the map canvas.
+- **Authentic SpellBook Arrow Toggle Button (`Sidebar.lua`)**: Updated inner bottom-left sidebar toggle to use 26x26 `UI-SpellBookIcon-NextPage-Up/Down` and `UI-SpellBookIcon-PrevPage-Up/Down` textures, eliminating black background square artifacts and properly pointing RIGHT to collapse and LEFT to expand.
+- **Quest List & Details 330 px Geometry & Scrollbar Alignment (`DoubleWide.lua`)**: Restored native 330 px column widths for both `QuestsFrame` and `DetailsFrame` (672 px combined area), locking the Quest List scrollbar to the far right margin so it never overlaps quest checkmarks or header collapse icons, and removing manual cog overrides so the options button naturally clears `Quests: 22/40`.
+

@@ -156,39 +156,19 @@ function OneWorldMap.Sidebar:Init()
 
     self.elements = {}
 
-    -- 3. Gold Triangle Arrow Collapse Button at inner bottom-left of map canvas
+    -- 3. Authentic Blizzard SpellBook Page Arrow Toggle Button at inner bottom-left of map canvas
     -- Points RIGHT to collapse into map, points LEFT to expand outward
     local canvas = wmFrame.ScrollContainer or wmFrame
     local toggleBtn = CreateFrame("Button", "OneWorldMap_SidebarToggleBtn", canvas)
     self.toggleBtn = toggleBtn
-    toggleBtn:SetSize(22, 22)
+    toggleBtn:SetSize(26, 26)
     toggleBtn:SetPoint("BOTTOMLEFT", canvas, "BOTTOMLEFT", 6, 6)
     toggleBtn:SetFrameLevel(canvas:GetFrameLevel() + 20)
-
-    local normBg = toggleBtn:CreateTexture(nil, "BACKGROUND")
-    normBg:SetAllPoints()
-    normBg:SetTexture("Interface\\Buttons\\UI-SquareButton-Up")
-
-    local pushBg = toggleBtn:CreateTexture(nil, "BORDER")
-    pushBg:SetAllPoints()
-    pushBg:SetTexture("Interface\\Buttons\\UI-SquareButton-Down")
 
     local hl = toggleBtn:CreateTexture(nil, "HIGHLIGHT")
     hl:SetAllPoints()
     hl:SetTexture("Interface\\Buttons\\UI-Common-MouseHilight")
     hl:SetBlendMode("ADD")
-
-    local arrow = toggleBtn:CreateTexture(nil, "ARTWORK")
-    arrow:SetSize(14, 14)
-    arrow:SetPoint("CENTER", toggleBtn, "CENTER", 0, 0)
-    toggleBtn.Arrow = arrow
-
-    toggleBtn:SetScript("OnMouseDown", function()
-        arrow:SetPoint("CENTER", toggleBtn, "CENTER", 1, -1)
-    end)
-    toggleBtn:SetScript("OnMouseUp", function()
-        arrow:SetPoint("CENTER", toggleBtn, "CENTER", 0, 0)
-    end)
 
     toggleBtn:SetScript("OnClick", function()
         if OneWorldMapDB and OneWorldMapDB.sidebar then
@@ -232,22 +212,20 @@ function OneWorldMap.Sidebar:Init()
 end
 
 function OneWorldMap.Sidebar:UpdateToggleArrow()
-    if not self.toggleBtn or not self.toggleBtn.Arrow then return end
+    if not self.toggleBtn then return end
     local isCollapsed = OneWorldMapDB and OneWorldMapDB.sidebar and OneWorldMapDB.sidebar.collapsed
 
-    -- Points RIGHT to collapse, points LEFT to expand
+    -- Points RIGHT to collapse into map, points LEFT to expand outward
     if isCollapsed then
         -- Collapsed -> arrow points LEFT (<) to expand drawer
-        local ok = pcall(function() self.toggleBtn.Arrow:SetAtlas("Navigation_Chevron_Left", true) end)
-        if not ok or not self.toggleBtn.Arrow:GetTexture() then
-            self.toggleBtn.Arrow:SetTexture("Interface\\Buttons\\UI-SpellbookPage-PrevPage-Up")
-        end
+        self.toggleBtn:SetNormalTexture("Interface\\Buttons\\UI-SpellBookIcon-PrevPage-Up")
+        self.toggleBtn:SetPushedTexture("Interface\\Buttons\\UI-SpellBookIcon-PrevPage-Down")
+        self.toggleBtn:SetDisabledTexture("Interface\\Buttons\\UI-SpellBookIcon-PrevPage-Disabled")
     else
         -- Open -> arrow points RIGHT (>) to collapse drawer
-        local ok = pcall(function() self.toggleBtn.Arrow:SetAtlas("Navigation_Chevron_Right", true) end)
-        if not ok or not self.toggleBtn.Arrow:GetTexture() then
-            self.toggleBtn.Arrow:SetTexture("Interface\\Buttons\\UI-SpellbookPage-NextPage-Up")
-        end
+        self.toggleBtn:SetNormalTexture("Interface\\Buttons\\UI-SpellBookIcon-NextPage-Up")
+        self.toggleBtn:SetPushedTexture("Interface\\Buttons\\UI-SpellBookIcon-NextPage-Down")
+        self.toggleBtn:SetDisabledTexture("Interface\\Buttons\\UI-SpellBookIcon-NextPage-Disabled")
     end
 end
 
