@@ -159,7 +159,7 @@ function OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
 
     local cWidth = self.canvasWidth or 702
     local questListWidth = 330
-    local detailsWidth = 330
+    local detailsWidth = 308
     local gap = 8
 
     -- 1. Lock map canvas to the left
@@ -214,10 +214,19 @@ function OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
         if self.adjusting then return end
         self.adjusting = true
 
-        -- Double-wide: expand QuestMapFrame and WorldMapFrame to fit both 330px columns
-        local totalQuestAreaWidth = questListWidth + gap + detailsWidth + 4
+        -- Double-wide: expand QuestMapFrame and WorldMapFrame to fit 330px list + 308px details
+        local totalQuestAreaWidth = questListWidth + gap + detailsWidth
         qmFrame:SetWidth(totalQuestAreaWidth)
         wmFrame:SetWidth(4 + cWidth + totalQuestAreaWidth + 4)
+
+        -- Ensure DetailsFrame has a dark solid backing matching QuestsFrame
+        if not detailsFrame.BackingBg then
+            local bg = detailsFrame:CreateTexture(nil, "BACKGROUND", nil, -8)
+            bg:SetPoint("TOPLEFT", detailsFrame, "TOPLEFT", 0, 0)
+            bg:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", 0, 0)
+            bg:SetColorTexture(0.08, 0.08, 0.09, 0.95)
+            detailsFrame.BackingBg = bg
+        end
 
         -- Anchor DetailsFrame side-by-side to the right of QuestsFrame, full height
         detailsFrame:ClearAllPoints()
@@ -225,12 +234,20 @@ function OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
         detailsFrame:SetPoint("BOTTOMLEFT", questsFrame, "BOTTOMRIGHT", gap, 0)
         detailsFrame:SetWidth(detailsWidth)
 
-        -- Lock DetailsFrame ScrollBar inside DetailsFrame
+        -- Lock DetailsFrame ScrollBar inside DetailsFrame with matching dark track background
         local detailsScroll = detailsFrame.ScrollFrame or _G["QuestMapDetailsScrollFrame"]
         if detailsScroll and detailsScroll.ScrollBar then
             detailsScroll.ScrollBar:ClearAllPoints()
             detailsScroll.ScrollBar:SetPoint("TOPRIGHT", detailsFrame, "TOPRIGHT", -4, -48)
             detailsScroll.ScrollBar:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", -4, 28)
+
+            if not detailsScroll.ScrollBar.ScrollBarBg then
+                local sbg = detailsScroll.ScrollBar:CreateTexture(nil, "BACKGROUND", nil, -6)
+                sbg:SetPoint("TOPLEFT", detailsScroll.ScrollBar, "TOPLEFT", -2, 2)
+                sbg:SetPoint("BOTTOMRIGHT", detailsScroll.ScrollBar, "BOTTOMRIGHT", 2, -2)
+                sbg:SetColorTexture(0.05, 0.05, 0.06, 0.98)
+                detailsScroll.ScrollBar.ScrollBarBg = sbg
+            end
         end
 
         self.adjusting = false
