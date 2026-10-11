@@ -59,12 +59,13 @@ function OneWorldMap.Shell:SavePosition()
     local frame = WorldMapFrame
     if not frame then return end
 
-    local point, relativeTo, relativePoint, x, y = frame:GetPoint()
-    if point then
+    local left = frame:GetLeft()
+    local top = frame:GetTop()
+    if left and top then
         OneWorldMapDB.window = OneWorldMapDB.window or {}
-        OneWorldMapDB.window.point = point
-        OneWorldMapDB.window.xOffset = x or 0
-        OneWorldMapDB.window.yOffset = y or 0
+        OneWorldMapDB.window.point = "TOPLEFT"
+        OneWorldMapDB.window.xOffset = left
+        OneWorldMapDB.window.yOffset = top
     end
 end
 
@@ -74,9 +75,23 @@ function OneWorldMap.Shell:RestorePosition()
     if not frame then return end
 
     local cfg = OneWorldMapDB and OneWorldMapDB.window
-    if cfg and cfg.point and cfg.xOffset and cfg.yOffset then
+    if cfg and cfg.xOffset and cfg.yOffset and cfg.point == "TOPLEFT" then
         frame:ClearAllPoints()
-        frame:SetPoint(cfg.point, UIParent, cfg.point, cfg.xOffset, cfg.yOffset)
+        frame:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", cfg.xOffset, cfg.yOffset)
+    else
+        -- If center or uninitialized, center then convert to TOPLEFT so width changes only grow to the right
+        frame:ClearAllPoints()
+        frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+        local left = frame:GetLeft()
+        local top = frame:GetTop()
+        if left and top then
+            frame:ClearAllPoints()
+            frame:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
+            OneWorldMapDB.window = OneWorldMapDB.window or {}
+            OneWorldMapDB.window.point = "TOPLEFT"
+            OneWorldMapDB.window.xOffset = left
+            OneWorldMapDB.window.yOffset = top
+        end
     end
 
     if cfg and cfg.scale and cfg.scale > 0 then
