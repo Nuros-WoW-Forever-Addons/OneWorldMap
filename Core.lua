@@ -13,7 +13,7 @@ local defaults = {
     },
     sidebar = {
         collapsed = false,
-        width = 210,
+        width = 240,
         collapsedHeaders = {},
     },
     questLog = {

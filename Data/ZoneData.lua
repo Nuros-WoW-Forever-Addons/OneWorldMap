@@ -1,5 +1,5 @@
 -- OneWorldMap: Data/ZoneData.lua
--- Database of Classic zone metadata: level ranges, gathering thresholds (Herbs, Ore, Skinning, Fishing), and dungeon brackets.
+-- Database of Classic zone metadata: level ranges, gathering thresholds (Herbs, Ore, Skinning, Fish), and dungeon brackets.
 
 OneWorldMap = OneWorldMap or {}
 OneWorldMap.ZoneData = {}
@@ -21,6 +21,10 @@ local zoneDataByUiMapID = {
             { name = "Ruined Leather Scraps", skill = 1 },
             { name = "Light Leather", skill = 1 },
         },
+        fish = {
+            { name = "Raw Brilliant Smallfish", skill = 1 },
+            { name = "Raw Longjaw Mud Snapper", skill = 50 },
+        },
         fishing = 1,
         dungeons = {},
     },
@@ -40,6 +44,12 @@ local zoneDataByUiMapID = {
             { name = "Light Leather", skill = 1 },
             { name = "Light Hide", skill = 1 },
             { name = "Medium Leather", skill = 75 },
+        },
+        fish = {
+            { name = "Raw Slitherskin Mackerel", skill = 1 },
+            { name = "Raw Rainbow Fin Albacore", skill = 50 },
+            { name = "Oily Blackmouth", skill = 100 },
+            { name = "Firefin Snapper", skill = 100 },
         },
         fishing = 55,
         dungeons = {
@@ -65,6 +75,11 @@ local zoneDataByUiMapID = {
             { name = "Medium Leather", skill = 75 },
             { name = "Medium Hide", skill = 100 },
         },
+        fish = {
+            { name = "Raw Rainbow Fin Albacore", skill = 50 },
+            { name = "Raw Bristle Whisker Catfish", skill = 100 },
+            { name = "Raw Mithril Head Trout", skill = 175 },
+        },
         fishing = 75,
         dungeons = {},
     },
@@ -88,6 +103,10 @@ local zoneDataByUiMapID = {
             { name = "Medium Hide", skill = 100 },
             { name = "Heavy Leather", skill = 150 },
         },
+        fish = {
+            { name = "Raw Bristle Whisker Catfish", skill = 100 },
+            { name = "Raw Mithril Head Trout", skill = 175 },
+        },
         fishing = 75,
         dungeons = {},
     },
@@ -106,6 +125,10 @@ local zoneDataByUiMapID = {
         skins = {
             { name = "Ruined Leather Scraps", skill = 1 },
             { name = "Light Leather", skill = 1 },
+        },
+        fish = {
+            { name = "Raw Brilliant Smallfish", skill = 1 },
+            { name = "Raw Longjaw Mud Snapper", skill = 50 },
         },
         fishing = 1,
         dungeons = {
@@ -132,6 +155,11 @@ local zoneDataByUiMapID = {
             { name = "Light Hide", skill = 1 },
             { name = "Medium Leather", skill = 75 },
         },
+        fish = {
+            { name = "Loch Frenzy", skill = 50 },
+            { name = "Raw Longjaw Mud Snapper", skill = 50 },
+            { name = "Raw Bristle Whisker Catfish", skill = 100 },
+        },
         fishing = 55,
         dungeons = {},
     },
@@ -154,6 +182,12 @@ local zoneDataByUiMapID = {
             { name = "Medium Hide", skill = 100 },
             { name = "Heavy Leather", skill = 150 },
         },
+        fish = {
+            { name = "Raw Bristle Whisker Catfish", skill = 100 },
+            { name = "Raw Mithril Head Trout", skill = 175 },
+            { name = "Oily Blackmouth", skill = 100 },
+            { name = "Firefin Snapper", skill = 100 },
+        },
         fishing = 105,
         dungeons = {},
     },
@@ -172,6 +206,10 @@ local zoneDataByUiMapID = {
         skins = {
             { name = "Ruined Leather Scraps", skill = 1 },
             { name = "Light Leather", skill = 1 },
+        },
+        fish = {
+            { name = "Raw Brilliant Smallfish", skill = 1 },
+            { name = "Raw Longjaw Mud Snapper", skill = 50 },
         },
         fishing = 1,
         dungeons = {
@@ -198,6 +236,11 @@ local zoneDataByUiMapID = {
             { name = "Light Hide", skill = 1 },
             { name = "Medium Leather", skill = 75 },
         },
+        fish = {
+            { name = "Raw Slitherskin Mackerel", skill = 1 },
+            { name = "Raw Rainbow Fin Albacore", skill = 50 },
+            { name = "Oily Blackmouth", skill = 100 },
+        },
         fishing = 55,
         dungeons = {
             { name = "Shadowfang Keep", minLevel = 22, maxLevel = 30 },
@@ -223,6 +266,12 @@ local zoneDataByUiMapID = {
             { name = "Medium Hide", skill = 100 },
             { name = "Heavy Leather", skill = 150 },
         },
+        fish = {
+            { name = "Raw Bristle Whisker Catfish", skill = 100 },
+            { name = "Raw Mithril Head Trout", skill = 175 },
+            { name = "Oily Blackmouth", skill = 100 },
+            { name = "Firefin Snapper", skill = 100 },
+        },
         fishing = 105,
         dungeons = {},
     },
@@ -247,6 +296,13 @@ local zoneDataByUiMapID = {
             { name = "Heavy Hide", skill = 150 },
             { name = "Thick Leather", skill = 200 },
         },
+        fish = {
+            { name = "Raw Mithril Head Trout", skill = 175 },
+            { name = "Raw Spotted Yellowtail", skill = 225 },
+            { name = "Raw Rockscale Cod", skill = 175 },
+            { name = "Oily Blackmouth", skill = 100 },
+            { name = "Firefin Snapper", skill = 100 },
+        },
         fishing = 150,
         dungeons = {
             { name = "Zul'Gurub", minLevel = 60, maxLevel = 60 },
@@ -268,6 +324,10 @@ local zoneDataByUiMapID = {
             { name = "Ruined Leather Scraps", skill = 1 },
             { name = "Light Leather", skill = 1 },
         },
+        fish = {
+            { name = "Raw Slitherskin Mackerel", skill = 1 },
+            { name = "Raw Longjaw Mud Snapper", skill = 50 },
+        },
         fishing = 1,
         dungeons = {
             { name = "Ragefire Chasm", minLevel = 13, maxLevel = 18 },
@@ -288,6 +348,10 @@ local zoneDataByUiMapID = {
         skins = {
             { name = "Ruined Leather Scraps", skill = 1 },
             { name = "Light Leather", skill = 1 },
+        },
+        fish = {
+            { name = "Raw Brilliant Smallfish", skill = 1 },
+            { name = "Raw Longjaw Mud Snapper", skill = 50 },
         },
         fishing = 1,
         dungeons = {},
@@ -313,6 +377,11 @@ local zoneDataByUiMapID = {
             { name = "Light Hide", skill = 1 },
             { name = "Medium Leather", skill = 75 },
             { name = "Medium Hide", skill = 100 },
+        },
+        fish = {
+            { name = "Deviate Fish", skill = 1 },
+            { name = "Raw Longjaw Mud Snapper", skill = 50 },
+            { name = "Raw Bristle Whisker Catfish", skill = 100 },
         },
         fishing = 55,
         dungeons = {
@@ -340,6 +409,11 @@ local zoneDataByUiMapID = {
             { name = "Light Hide", skill = 1 },
             { name = "Medium Leather", skill = 75 },
         },
+        fish = {
+            { name = "Raw Slitherskin Mackerel", skill = 1 },
+            { name = "Raw Rainbow Fin Albacore", skill = 50 },
+            { name = "Oily Blackmouth", skill = 100 },
+        },
         fishing = 55,
         dungeons = {},
     },
@@ -362,6 +436,11 @@ local zoneDataByUiMapID = {
             { name = "Medium Leather", skill = 75 },
             { name = "Medium Hide", skill = 100 },
             { name = "Heavy Leather", skill = 150 },
+        },
+        fish = {
+            { name = "Raw Bristle Whisker Catfish", skill = 100 },
+            { name = "Raw Mithril Head Trout", skill = 175 },
+            { name = "Oily Blackmouth", skill = 100 },
         },
         fishing = 75,
         dungeons = {
