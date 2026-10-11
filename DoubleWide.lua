@@ -1,5 +1,6 @@
 -- OneWorldMap: DoubleWide.lua
--- Quest frame layout engine: maintains QuestsFrame and DetailsFrame side-by-side in persistent dual columns.
+-- Quest frame layout engine: maintains QuestsFrame and DetailsFrame side-by-side in persistent dual columns,
+-- preventing QuestsFrame.ScrollFrame from being hidden and constraining the details scrollbar.
 
 OneWorldMap = OneWorldMap or {}
 OneWorldMap.DoubleWide = {}
@@ -21,23 +22,36 @@ function OneWorldMap.DoubleWide:Init()
         return
     end
 
-    self:SetupLayout()
+    self:SetupHooks()
 end
 
-function OneWorldMap.DoubleWide:SetupLayout()
+function OneWorldMap.DoubleWide:SetupHooks()
     if self.isInitialized then return end
     self.isInitialized = true
 
-    local wmFrame = WorldMapFrame
     local qmFrame = QuestMapFrame
     local questsFrame = qmFrame and qmFrame.QuestsFrame
     local detailsFrame = qmFrame and qmFrame.DetailsFrame
+    local questScroll = questsFrame and questsFrame.ScrollFrame
 
-    if not questsFrame or not detailsFrame then return end
+    if not questsFrame or not detailsFrame or not questScroll then return end
 
-    -- Intercept QuestsFrame.Hide to keep the quest list visible when details are open
+    -- 1. Intercept QuestsFrame.ScrollFrame.Hide to prevent Blizzard line 1077 from hiding the quest list
+    local origScrollHide = questScroll.Hide
+    questScroll.Hide = function(self)
+        if InCombatLockdown() then return origScrollHide(self) end
+        if OneWorldMapDB and OneWorldMapDB.questLog and OneWorldMapDB.questLog.doubleWide and not self.allowHide then
+            if detailsFrame:IsShown() then
+                return
+            end
+        end
+        origScrollHide(self)
+    end
+
+    -- Also intercept questsFrame.Hide
     local origQuestsHide = questsFrame.Hide
     questsFrame.Hide = function(self)
+        if InCombatLockdown() then return origQuestsHide(self) end
         if OneWorldMapDB and OneWorldMapDB.questLog and OneWorldMapDB.questLog.doubleWide and not self.allowHide then
             if detailsFrame:IsShown() then
                 return
@@ -46,17 +60,17 @@ function OneWorldMap.DoubleWide:SetupLayout()
         origQuestsHide(self)
     end
 
-    -- Hook OnHide as an extra safety measure against Blizzard update scripts
-    questsFrame:HookScript("OnHide", function(self)
+    -- Safety OnHide hook
+    questScroll:HookScript("OnHide", function(self)
+        if InCombatLockdown() then return end
         if OneWorldMapDB and OneWorldMapDB.questLog and OneWorldMapDB.questLog.doubleWide and not self.allowHide then
             if detailsFrame:IsShown() then
                 self:Show()
-                self:SetAlpha(1.0)
             end
         end
     end)
 
-    -- Hook QuestMapFrame_ShowQuestDetails
+    -- 2. Hook QuestMapFrame_ShowQuestDetails to apply DoubleWide side-by-side layout
     if type(QuestMapFrame_ShowQuestDetails) == "function" then
         hooksecurefunc("QuestMapFrame_ShowQuestDetails", function(questID)
             if OneWorldMapDB and OneWorldMapDB.questLog and OneWorldMapDB.questLog.doubleWide then
@@ -65,18 +79,24 @@ function OneWorldMap.DoubleWide:SetupLayout()
         end)
     end
 
-    -- Hook Close Details
-    local closeFnName = (type(QuestMapFrame_CloseQuestDetails) == "function" and "QuestMapFrame_CloseQuestDetails")
-        or (type(QuestMapFrame_HideQuestDetails) == "function" and "QuestMapFrame_HideQuestDetails")
-    if closeFnName then
-        hooksecurefunc(closeFnName, function()
+    -- 3. Hook Close / Return functions
+    if type(QuestMapFrame_CloseQuestDetails) == "function" then
+        hooksecurefunc("QuestMapFrame_CloseQuestDetails", function()
             if OneWorldMapDB and OneWorldMapDB.questLog and OneWorldMapDB.questLog.doubleWide then
                 OneWorldMap.DoubleWide:ApplyDoubleWideLayout(false)
             end
         end)
     end
 
-    -- Hook DetailsFrame OnShow and OnHide
+    if type(QuestMapFrame_ReturnFromQuestDetails) == "function" then
+        hooksecurefunc("QuestMapFrame_ReturnFromQuestDetails", function()
+            if OneWorldMapDB and OneWorldMapDB.questLog and OneWorldMapDB.questLog.doubleWide then
+                OneWorldMap.DoubleWide:ApplyDoubleWideLayout(false)
+            end
+        end)
+    end
+
+    -- 4. Hook DetailsFrame OnShow and OnHide
     detailsFrame:HookScript("OnShow", function()
         if OneWorldMapDB and OneWorldMapDB.questLog and OneWorldMapDB.questLog.doubleWide then
             OneWorldMap.DoubleWide:ApplyDoubleWideLayout(true)
@@ -89,16 +109,17 @@ function OneWorldMap.DoubleWide:SetupLayout()
         end
     end)
 
-    -- Handle Back button click
-    if detailsFrame.BackButton then
-        detailsFrame.BackButton:HookScript("OnClick", function()
+    -- 5. Handle Back button click
+    local backButton = (detailsFrame.BackFrame and detailsFrame.BackFrame.BackButton) or detailsFrame.BackButton
+    if backButton then
+        backButton:HookScript("OnClick", function()
             if OneWorldMapDB and OneWorldMapDB.questLog and OneWorldMapDB.questLog.doubleWide then
                 OneWorldMap.DoubleWide:ApplyDoubleWideLayout(false)
             end
         end)
     end
 
-    -- Initial check if details already open
+    -- Initial state check
     if detailsFrame:IsShown() and OneWorldMapDB and OneWorldMapDB.questLog and OneWorldMapDB.questLog.doubleWide then
         self:ApplyDoubleWideLayout(true)
     end
@@ -113,59 +134,76 @@ function OneWorldMap.DoubleWide:ApplyDoubleWideLayout(isDetailsOpen)
 
     local questsFrame = qmFrame.QuestsFrame
     local detailsFrame = qmFrame.DetailsFrame
-    if not questsFrame or not detailsFrame then return end
+    local questScroll = questsFrame and questsFrame.ScrollFrame
+    if not questsFrame or not detailsFrame or not questScroll then return end
 
-    if not wmFrame.baseWidth then
-        wmFrame.baseWidth = wmFrame:GetWidth()
-    end
-    if not qmFrame.baseWidth then
-        qmFrame.baseWidth = qmFrame:GetWidth()
-    end
-
-    local singleWidth = qmFrame.baseWidth or 284
-    local detailsWidth = singleWidth
+    local singleWidth = 330
+    local detailsWidth = 308
 
     if isDetailsOpen and (OneWorldMapDB and OneWorldMapDB.questLog and OneWorldMapDB.questLog.doubleWide) then
         if self.adjusting then return end
         self.adjusting = true
 
-        -- 1. Expand QuestMapFrame to encompass both columns
-        qmFrame:SetWidth(singleWidth + detailsWidth)
+        -- Store base width of WorldMapFrame once before expanding
+        if not self.isExpanded then
+            self.baseWorldMapWidth = wmFrame:GetWidth()
+            wmFrame:SetWidth(self.baseWorldMapWidth + detailsWidth + 4)
+            self.isExpanded = true
+        end
 
-        -- 2. Expand WorldMapFrame to accommodate the second column
-        wmFrame:SetWidth(wmFrame.baseWidth + detailsWidth)
+        -- Expand QuestMapFrame container
+        qmFrame:SetWidth(singleWidth + detailsWidth + 4)
 
-        -- 3. Position QuestsFrame on the left side of QuestMapFrame
+        -- Keep quest list (and its scroll frame) visible
+        questsFrame:Show()
+        questScroll:Show()
+
+        -- Anchor QuestsFrame cleanly to left of QuestMapFrame
         questsFrame:ClearAllPoints()
         questsFrame:SetPoint("TOPLEFT", qmFrame, "TOPLEFT", 0, 0)
         questsFrame:SetPoint("BOTTOMLEFT", qmFrame, "BOTTOMLEFT", 0, 0)
         questsFrame:SetWidth(singleWidth)
-        questsFrame:Show()
-        questsFrame:SetAlpha(1.0)
 
-        -- 4. Position DetailsFrame directly to the right of QuestsFrame
+        -- Anchor DetailsFrame side-by-side to right of QuestsFrame
         detailsFrame:ClearAllPoints()
-        detailsFrame:SetPoint("TOPLEFT", questsFrame, "TOPRIGHT", 0, 0)
-        detailsFrame:SetPoint("BOTTOMLEFT", questsFrame, "BOTTOMRIGHT", 0, 0)
+        detailsFrame:SetPoint("TOPLEFT", questsFrame, "TOPRIGHT", 4, 0)
+        detailsFrame:SetPoint("BOTTOMLEFT", questsFrame, "BOTTOMRIGHT", 4, 0)
         detailsFrame:SetWidth(detailsWidth)
+
+        -- Constrain DetailsFrame ScrollBar so it never moves off the panel
+        local detailsScroll = detailsFrame.ScrollFrame or _G["QuestMapDetailsScrollFrame"]
+        if detailsScroll and detailsScroll.ScrollBar then
+            detailsScroll.ScrollBar:ClearAllPoints()
+            detailsScroll.ScrollBar:SetPoint("TOPRIGHT", detailsFrame, "TOPRIGHT", -8, -48)
+            detailsScroll.ScrollBar:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", -8, 28)
+        end
 
         self.adjusting = false
     else
         if self.adjusting then return end
         self.adjusting = true
 
-        -- Restore to single width
-        qmFrame:SetWidth(singleWidth)
-        if wmFrame.baseWidth then
-            wmFrame:SetWidth(wmFrame.baseWidth)
+        -- Restore WorldMapFrame width
+        if self.isExpanded and self.baseWorldMapWidth then
+            wmFrame:SetWidth(self.baseWorldMapWidth)
+            self.isExpanded = false
         end
 
+        -- Restore QuestMapFrame width
+        qmFrame:SetWidth(singleWidth)
+
+        -- Restore QuestsFrame anchors to Blizzard default
         questsFrame:ClearAllPoints()
-        questsFrame:SetPoint("TOPLEFT", qmFrame, "TOPLEFT", 0, 0)
-        questsFrame:SetPoint("BOTTOMRIGHT", qmFrame, "BOTTOMRIGHT", 0, 0)
-        questsFrame:SetWidth(singleWidth)
+        if qmFrame.ContentsAnchor then
+            questsFrame:SetPoint("TOPLEFT", qmFrame.ContentsAnchor, "TOPLEFT", 0, 0)
+            questsFrame:SetPoint("BOTTOMRIGHT", qmFrame.ContentsAnchor, "BOTTOMRIGHT", -22, 0)
+        else
+            questsFrame:SetPoint("TOPLEFT", qmFrame, "TOPLEFT", 0, 0)
+            questsFrame:SetPoint("BOTTOMRIGHT", qmFrame, "BOTTOMRIGHT", -22, 0)
+        end
+
         questsFrame:Show()
-        questsFrame:SetAlpha(1.0)
+        questScroll:Show()
 
         self.adjusting = false
     end
