@@ -192,10 +192,6 @@ function OneWorldMap.Coordinates:UpdateCoordinates()
         self.text:SetText(string.format("Player: %s | Cursor: %s", playerStr, cursorStr))
     end
 
-    -- Pass coordinates to Sidebar if available
-    if OneWorldMap.Sidebar and OneWorldMap.Sidebar.UpdateCoordsText then
-        OneWorldMap.Sidebar:UpdateCoordsText(playerStr, cursorStr)
-    end
 end
 
 function OneWorldMap.Coordinates:UpdateVisibility()

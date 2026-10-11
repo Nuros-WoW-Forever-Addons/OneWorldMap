@@ -1,5 +1,5 @@
 -- OneWorldMap: Data/ZoneData.lua
--- Static database of Classic zone metadata: level ranges, gathering thresholds, and dungeon brackets.
+-- Database of Classic zone metadata: level ranges, gathering thresholds (Herbs, Ore, Skinning, Fishing), and dungeon brackets.
 
 OneWorldMap = OneWorldMap or {}
 OneWorldMap.ZoneData = {}
@@ -17,6 +17,10 @@ local zoneDataByUiMapID = {
         ores = {
             { name = "Copper", skill = 1 },
         },
+        skins = {
+            { name = "Ruined Leather Scraps", skill = 1 },
+            { name = "Light Leather", skill = 1 },
+        },
         fishing = 1,
         dungeons = {},
     },
@@ -31,6 +35,11 @@ local zoneDataByUiMapID = {
         ores = {
             { name = "Tin", skill = 65 },
             { name = "Silver", skill = 75 },
+        },
+        skins = {
+            { name = "Light Leather", skill = 1 },
+            { name = "Light Hide", skill = 1 },
+            { name = "Medium Leather", skill = 75 },
         },
         fishing = 55,
         dungeons = {
@@ -51,6 +60,11 @@ local zoneDataByUiMapID = {
             { name = "Silver", skill = 75 },
             { name = "Iron", skill = 125 },
         },
+        skins = {
+            { name = "Light Leather", skill = 1 },
+            { name = "Medium Leather", skill = 75 },
+            { name = "Medium Hide", skill = 100 },
+        },
         fishing = 75,
         dungeons = {},
     },
@@ -69,6 +83,11 @@ local zoneDataByUiMapID = {
             { name = "Iron", skill = 125 },
             { name = "Gold", skill = 155 },
         },
+        skins = {
+            { name = "Medium Leather", skill = 75 },
+            { name = "Medium Hide", skill = 100 },
+            { name = "Heavy Leather", skill = 150 },
+        },
         fishing = 75,
         dungeons = {},
     },
@@ -83,6 +102,10 @@ local zoneDataByUiMapID = {
         },
         ores = {
             { name = "Copper", skill = 1 },
+        },
+        skins = {
+            { name = "Ruined Leather Scraps", skill = 1 },
+            { name = "Light Leather", skill = 1 },
         },
         fishing = 1,
         dungeons = {
@@ -104,6 +127,11 @@ local zoneDataByUiMapID = {
             { name = "Tin", skill = 65 },
             { name = "Silver", skill = 75 },
         },
+        skins = {
+            { name = "Light Leather", skill = 1 },
+            { name = "Light Hide", skill = 1 },
+            { name = "Medium Leather", skill = 75 },
+        },
         fishing = 55,
         dungeons = {},
     },
@@ -121,6 +149,11 @@ local zoneDataByUiMapID = {
             { name = "Iron", skill = 125 },
             { name = "Silver", skill = 75 },
         },
+        skins = {
+            { name = "Medium Leather", skill = 75 },
+            { name = "Medium Hide", skill = 100 },
+            { name = "Heavy Leather", skill = 150 },
+        },
         fishing = 105,
         dungeons = {},
     },
@@ -135,6 +168,10 @@ local zoneDataByUiMapID = {
         },
         ores = {
             { name = "Copper", skill = 1 },
+        },
+        skins = {
+            { name = "Ruined Leather Scraps", skill = 1 },
+            { name = "Light Leather", skill = 1 },
         },
         fishing = 1,
         dungeons = {
@@ -156,6 +193,11 @@ local zoneDataByUiMapID = {
             { name = "Tin", skill = 65 },
             { name = "Silver", skill = 75 },
         },
+        skins = {
+            { name = "Light Leather", skill = 1 },
+            { name = "Light Hide", skill = 1 },
+            { name = "Medium Leather", skill = 75 },
+        },
         fishing = 55,
         dungeons = {
             { name = "Shadowfang Keep", minLevel = 22, maxLevel = 30 },
@@ -176,6 +218,11 @@ local zoneDataByUiMapID = {
             { name = "Iron", skill = 125 },
             { name = "Mithril", skill = 175 },
         },
+        skins = {
+            { name = "Medium Leather", skill = 75 },
+            { name = "Medium Hide", skill = 100 },
+            { name = "Heavy Leather", skill = 150 },
+        },
         fishing = 105,
         dungeons = {},
     },
@@ -194,6 +241,12 @@ local zoneDataByUiMapID = {
             { name = "Mithril", skill = 175 },
             { name = "Truesilver", skill = 230 },
         },
+        skins = {
+            { name = "Medium Leather", skill = 75 },
+            { name = "Heavy Leather", skill = 150 },
+            { name = "Heavy Hide", skill = 150 },
+            { name = "Thick Leather", skill = 200 },
+        },
         fishing = 150,
         dungeons = {
             { name = "Zul'Gurub", minLevel = 60, maxLevel = 60 },
@@ -211,6 +264,10 @@ local zoneDataByUiMapID = {
         ores = {
             { name = "Copper", skill = 1 },
         },
+        skins = {
+            { name = "Ruined Leather Scraps", skill = 1 },
+            { name = "Light Leather", skill = 1 },
+        },
         fishing = 1,
         dungeons = {
             { name = "Ragefire Chasm", minLevel = 13, maxLevel = 18 },
@@ -227,6 +284,10 @@ local zoneDataByUiMapID = {
         },
         ores = {
             { name = "Copper", skill = 1 },
+        },
+        skins = {
+            { name = "Ruined Leather Scraps", skill = 1 },
+            { name = "Light Leather", skill = 1 },
         },
         fishing = 1,
         dungeons = {},
@@ -246,6 +307,12 @@ local zoneDataByUiMapID = {
             { name = "Copper", skill = 1 },
             { name = "Tin", skill = 65 },
             { name = "Silver", skill = 75 },
+        },
+        skins = {
+            { name = "Light Leather", skill = 1 },
+            { name = "Light Hide", skill = 1 },
+            { name = "Medium Leather", skill = 75 },
+            { name = "Medium Hide", skill = 100 },
         },
         fishing = 55,
         dungeons = {
@@ -268,6 +335,11 @@ local zoneDataByUiMapID = {
             { name = "Copper", skill = 1 },
             { name = "Tin", skill = 65 },
         },
+        skins = {
+            { name = "Light Leather", skill = 1 },
+            { name = "Light Hide", skill = 1 },
+            { name = "Medium Leather", skill = 75 },
+        },
         fishing = 55,
         dungeons = {},
     },
@@ -285,6 +357,11 @@ local zoneDataByUiMapID = {
         ores = {
             { name = "Tin", skill = 65 },
             { name = "Iron", skill = 125 },
+        },
+        skins = {
+            { name = "Medium Leather", skill = 75 },
+            { name = "Medium Hide", skill = 100 },
+            { name = "Heavy Leather", skill = 150 },
         },
         fishing = 75,
         dungeons = {
