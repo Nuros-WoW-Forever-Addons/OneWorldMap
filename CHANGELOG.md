@@ -16,3 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Throttled Coordinates Bar (`Coordinates.lua`)**: 10 Hz ticker bar showing `Player: XX.X, YY.Y | Cursor: XX.X, YY.Y` with canvas bounds validation and dungeon nil-guards.
 - **Static Zone Database (`Data/ZoneData.lua`)**: Baseline database mapping `uiMapID` to level ranges, gathering thresholds, and dungeon recommendations.
 - **Slash Command Handler (`Core.lua`)**: Registered `/oneworldmap`, `/owm`, `/onemap`, and `/om` commands with `/owm reset`, `/owm sidebar`, `/owm coords`, and `/owm fade`.
+
+### Fixed
+- **Coordinate Redundancy & Default Suppression (`Coordinates.lua`)**: Added deep recursive detection and suppression of default unstyled coordinates (stacked cursor/player readout at bottom-left), ensuring only the preferred high-contrast black background pill box is shown.
+- **DoubleWide Quest Persistence (`DoubleWide.lua`)**: Intercepted `QuestsFrame.Hide` and dynamic Blizzard update triggers so the quest list remains persistently visible on the left while quest details render side-by-side on the right.
