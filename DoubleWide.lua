@@ -158,9 +158,7 @@ function OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
     if not questsFrame or not detailsFrame or not questScroll then return end
 
     local cWidth = self.canvasWidth or 702
-    local questListWidth = 306
-    local detailsWidth = 308
-    local gap = 2
+    local panelWidth = 330 -- Default Blizzard QuestMapFrame panel width
 
     -- 1. Lock map canvas to the left
     scrollContainer:ClearAllPoints()
@@ -188,47 +186,43 @@ function OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
     qmFrame:SetPoint("TOPLEFT", wmFrame, "TOPLEFT", 4 + cWidth, -25)
     qmFrame:SetPoint("BOTTOMLEFT", wmFrame, "BOTTOMLEFT", 4 + cWidth, 3)
 
-    -- Anchor QuestsFrame cleanly inside QuestMapFrame
+    -- PANEL 1: Quest List (exact default 330px panel dimensions)
     questsFrame:ClearAllPoints()
     questsFrame:SetPoint("TOPLEFT", qmFrame, "TOPLEFT", 0, 0)
     questsFrame:SetPoint("BOTTOMLEFT", qmFrame, "BOTTOMLEFT", 0, 0)
-    questsFrame:SetWidth(questListWidth)
+    questsFrame:SetWidth(panelWidth)
     questsFrame:Show()
 
-    -- Quest List scroll frame stops at y = 23 above the bottom to prevent colliding with the bottom border
+    -- Quest List scroll frame leaves exact 22px gutter for scrollbar and stops at y = 23 above bottom border
     questScroll:ClearAllPoints()
     questScroll:SetPoint("TOPLEFT", questsFrame, "TOPLEFT", 0, -29)
-    questScroll:SetPoint("BOTTOMRIGHT", questsFrame, "BOTTOMRIGHT", -18, 23)
+    questScroll:SetPoint("BOTTOMRIGHT", questsFrame, "BOTTOMRIGHT", -22, 23)
     questScroll:Show()
 
-    -- Hide any legacy gutter textures
-    if questsFrame.ScrollGutterBg then
-        questsFrame.ScrollGutterBg:Hide()
+    -- Panel 1: 22px slate-gray scrollbar gutter background
+    if not questsFrame.ScrollGutterBg then
+        local bg = questsFrame:CreateTexture(nil, "BACKGROUND", nil, 1)
+        questsFrame.ScrollGutterBg = bg
     end
+    questsFrame.ScrollGutterBg:ClearAllPoints()
+    questsFrame.ScrollGutterBg:SetPoint("TOPLEFT", questsFrame, "TOPRIGHT", -22, -29)
+    questsFrame.ScrollGutterBg:SetPoint("BOTTOMRIGHT", questsFrame, "BOTTOMRIGHT", 0, 23)
+    questsFrame.ScrollGutterBg:SetColorTexture(0.18, 0.18, 0.20, 0.95)
+    questsFrame.ScrollGutterBg:Show()
 
-    -- Quest List ScrollBar and authentic gray track background
+    -- Panel 1: ScrollBar centered in the 22px gutter
     if questScroll.ScrollBar then
         questScroll.ScrollBar:ClearAllPoints()
-        questScroll.ScrollBar:SetPoint("TOPLEFT", questScroll, "TOPRIGHT", 4, 0)
-        questScroll.ScrollBar:SetPoint("BOTTOMLEFT", questScroll, "BOTTOMRIGHT", 4, 0)
-
-        if not questScroll.ScrollBar.GutterBg then
-            local bg = questScroll.ScrollBar:CreateTexture(nil, "BACKGROUND", nil, -1)
-            questScroll.ScrollBar.GutterBg = bg
+        questScroll.ScrollBar:SetPoint("TOPLEFT", questScroll, "TOPRIGHT", 7, 2)
+        questScroll.ScrollBar:SetPoint("BOTTOMLEFT", questScroll, "BOTTOMRIGHT", 7, -2)
+        if questScroll.ScrollBar.GutterBg then
+            questScroll.ScrollBar.GutterBg:Hide()
         end
-        questScroll.ScrollBar.GutterBg:ClearAllPoints()
-        questScroll.ScrollBar.GutterBg:SetPoint("TOPLEFT", questScroll.ScrollBar, "TOPLEFT", -2, 0)
-        questScroll.ScrollBar.GutterBg:SetPoint("BOTTOMRIGHT", questScroll.ScrollBar, "BOTTOMRIGHT", 2, 0)
-        questScroll.ScrollBar.GutterBg:SetColorTexture(0.20, 0.20, 0.22, 0.85)
-        questScroll.ScrollBar.GutterBg:Show()
     end
 
     -- Cleanup legacy background textures
     if detailsFrame.BackingBg then
         detailsFrame.BackingBg:Hide()
-    end
-    if detailsFrame.ScrollGutterBg then
-        detailsFrame.ScrollGutterBg:Hide()
     end
 
     local detailsScroll = detailsFrame.ScrollFrame or _G["QuestMapDetailsScrollFrame"]
@@ -242,39 +236,65 @@ function OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
         if self.adjusting then return end
         self.adjusting = true
 
-        -- Double-wide: expand QuestMapFrame and WorldMapFrame to fit 306px list + 308px details
-        local totalQuestAreaWidth = questListWidth + gap + detailsWidth
+        -- Additive double-wide: Panel 1 (330px) + Panel 2 (330px) = 660px
+        local totalQuestAreaWidth = panelWidth * 2
         qmFrame:SetWidth(totalQuestAreaWidth)
         wmFrame:SetWidth(4 + cWidth + totalQuestAreaWidth + 4)
 
-        -- Anchor DetailsFrame snugly next to QuestsFrame
+        -- PANEL 2: Quest Details (identically dimensioned 330px panel added to the right of Panel 1)
         detailsFrame:ClearAllPoints()
-        detailsFrame:SetPoint("TOPLEFT", questsFrame, "TOPRIGHT", gap, 0)
-        detailsFrame:SetPoint("BOTTOMLEFT", questsFrame, "BOTTOMRIGHT", gap, 0)
-        detailsFrame:SetWidth(detailsWidth)
+        detailsFrame:SetPoint("TOPLEFT", qmFrame, "TOPLEFT", panelWidth, 0)
+        detailsFrame:SetPoint("BOTTOMLEFT", qmFrame, "BOTTOMLEFT", panelWidth, 0)
+        detailsFrame:SetWidth(panelWidth)
 
-        -- Details scroll frame stops at y = 23 above the bottom
+        -- Constrain parchment background to 308px so it never bleeds behind the scrollbar
+        if detailsFrame.Bg then
+            detailsFrame.Bg:ClearAllPoints()
+            detailsFrame.Bg:SetPoint("TOPLEFT", detailsFrame, "TOPLEFT", 0, 0)
+            detailsFrame.Bg:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", -22, 0)
+        end
+
+        -- Details scroll frame leaves exact 22px gutter and stops at y = 23 above bottom buttons
         if detailsScroll then
             detailsScroll:ClearAllPoints()
             detailsScroll:SetPoint("TOPLEFT", detailsFrame, "TOPLEFT", 5, -43)
-            detailsScroll:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", -18, 23)
+            detailsScroll:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", -22, 23)
         end
 
-        -- Details ScrollBar and identical gray track background
+        -- Panel 2: 22px slate-gray scrollbar gutter background matching Panel 1 identically
+        if not detailsFrame.ScrollGutterBg then
+            local bg = detailsFrame:CreateTexture(nil, "BACKGROUND", nil, 1)
+            detailsFrame.ScrollGutterBg = bg
+        end
+        detailsFrame.ScrollGutterBg:ClearAllPoints()
+        detailsFrame.ScrollGutterBg:SetPoint("TOPLEFT", detailsFrame, "TOPRIGHT", -22, -43)
+        detailsFrame.ScrollGutterBg:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", 0, 23)
+        detailsFrame.ScrollGutterBg:SetColorTexture(0.18, 0.18, 0.20, 0.95)
+        detailsFrame.ScrollGutterBg:Show()
+
+        -- Panel 2: ScrollBar centered in the 22px gutter identically to Panel 1
         if detailsScroll and detailsScroll.ScrollBar then
             detailsScroll.ScrollBar:ClearAllPoints()
-            detailsScroll.ScrollBar:SetPoint("TOPLEFT", detailsScroll, "TOPRIGHT", 4, 0)
-            detailsScroll.ScrollBar:SetPoint("BOTTOMLEFT", detailsScroll, "BOTTOMRIGHT", 4, 0)
-
-            if not detailsScroll.ScrollBar.GutterBg then
-                local bg = detailsScroll.ScrollBar:CreateTexture(nil, "BACKGROUND", nil, -1)
-                detailsScroll.ScrollBar.GutterBg = bg
+            detailsScroll.ScrollBar:SetPoint("TOPLEFT", detailsScroll, "TOPRIGHT", 7, 2)
+            detailsScroll.ScrollBar:SetPoint("BOTTOMLEFT", detailsScroll, "BOTTOMRIGHT", 7, -2)
+            if detailsScroll.ScrollBar.GutterBg then
+                detailsScroll.ScrollBar.GutterBg:Hide()
             end
-            detailsScroll.ScrollBar.GutterBg:ClearAllPoints()
-            detailsScroll.ScrollBar.GutterBg:SetPoint("TOPLEFT", detailsScroll.ScrollBar, "TOPLEFT", -2, 0)
-            detailsScroll.ScrollBar.GutterBg:SetPoint("BOTTOMRIGHT", detailsScroll.ScrollBar, "BOTTOMRIGHT", 2, 0)
-            detailsScroll.ScrollBar.GutterBg:SetColorTexture(0.20, 0.20, 0.22, 0.85)
-            detailsScroll.ScrollBar.GutterBg:Show()
+        end
+
+        -- Constrain bottom action buttons to the 308px content width so they don't cover the gutter
+        if detailsFrame.AbandonButton and detailsFrame.ShareButton and detailsFrame.TrackButton then
+            detailsFrame.AbandonButton:ClearAllPoints()
+            detailsFrame.AbandonButton:SetPoint("BOTTOMLEFT", detailsFrame, "BOTTOMLEFT", 4, 1)
+            detailsFrame.AbandonButton:SetWidth(100)
+
+            detailsFrame.ShareButton:ClearAllPoints()
+            detailsFrame.ShareButton:SetPoint("LEFT", detailsFrame.AbandonButton, "RIGHT", 1, 0)
+            detailsFrame.ShareButton:SetWidth(98)
+
+            detailsFrame.TrackButton:ClearAllPoints()
+            detailsFrame.TrackButton:SetPoint("LEFT", detailsFrame.ShareButton, "RIGHT", 1, 0)
+            detailsFrame.TrackButton:SetWidth(100)
         end
 
         self.adjusting = false
@@ -282,14 +302,13 @@ function OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
         if self.adjusting then return end
         self.adjusting = true
 
-        if detailsScroll and detailsScroll.ScrollBar and detailsScroll.ScrollBar.GutterBg then
-            detailsScroll.ScrollBar.GutterBg:Hide()
+        if detailsFrame.ScrollGutterBg then
+            detailsFrame.ScrollGutterBg:Hide()
         end
 
         -- Single-column width (List only, no details)
-        local singleQuestAreaWidth = questListWidth
-        qmFrame:SetWidth(singleQuestAreaWidth)
-        wmFrame:SetWidth(4 + cWidth + singleQuestAreaWidth + 4)
+        qmFrame:SetWidth(panelWidth)
+        wmFrame:SetWidth(4 + cWidth + panelWidth + 4)
 
         self.adjusting = false
     end
