@@ -158,8 +158,8 @@ function OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
     if not questsFrame or not detailsFrame or not questScroll then return end
 
     local cWidth = self.canvasWidth or 702
-    local questListWidth = 320
-    local detailsWidth = 308
+    local questListWidth = 330
+    local detailsWidth = 330
     local gap = 4
 
     -- 1. Lock map canvas to the left
@@ -188,27 +188,38 @@ function OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
     qmFrame:SetPoint("TOPLEFT", wmFrame, "TOPLEFT", 4 + cWidth, -25)
     qmFrame:SetPoint("BOTTOMLEFT", wmFrame, "BOTTOMLEFT", 4 + cWidth, 3)
 
-    -- Anchor QuestsFrame cleanly inside QuestMapFrame
+    -- Anchor QuestsFrame cleanly inside QuestMapFrame (width 330)
     questsFrame:ClearAllPoints()
     questsFrame:SetPoint("TOPLEFT", qmFrame, "TOPLEFT", 0, 0)
     questsFrame:SetPoint("BOTTOMLEFT", qmFrame, "BOTTOMLEFT", 0, 0)
     questsFrame:SetWidth(questListWidth)
     questsFrame:Show()
 
-    -- Lock QuestScrollFrame with tight margin for 8px MinimalScrollBar
+    -- Quest List scroll frame leaves exact 22px gutter on the right
     questScroll:ClearAllPoints()
     questScroll:SetPoint("TOPLEFT", questsFrame, "TOPLEFT", 0, -29)
-    questScroll:SetPoint("BOTTOMRIGHT", questsFrame, "BOTTOMRIGHT", -14, 0)
+    questScroll:SetPoint("BOTTOMRIGHT", questsFrame, "BOTTOMRIGHT", -22, 0)
     questScroll:Show()
 
-    -- Lock QuestScrollFrame.ScrollBar to match the 8px MinimalScrollBar width identically
+    -- Quest List 22px scrollbar gutter background
+    if not questsFrame.ScrollGutterBg then
+        local bg = questsFrame:CreateTexture(nil, "BACKGROUND", nil, -5)
+        bg:SetColorTexture(0.06, 0.06, 0.07, 0.95)
+        questsFrame.ScrollGutterBg = bg
+    end
+    questsFrame.ScrollGutterBg:ClearAllPoints()
+    questsFrame.ScrollGutterBg:SetPoint("TOPLEFT", questsFrame, "TOPRIGHT", -22, -29)
+    questsFrame.ScrollGutterBg:SetPoint("BOTTOMRIGHT", questsFrame, "BOTTOMRIGHT", 0, 0)
+    questsFrame.ScrollGutterBg:Show()
+
+    -- Quest List ScrollBar centered in the 22px gutter
     if questScroll.ScrollBar then
         questScroll.ScrollBar:ClearAllPoints()
-        questScroll.ScrollBar:SetPoint("TOPLEFT", questScroll, "TOPRIGHT", 3, 2)
-        questScroll.ScrollBar:SetPoint("BOTTOMLEFT", questScroll, "BOTTOMRIGHT", 3, -4)
+        questScroll.ScrollBar:SetPoint("TOPLEFT", questScroll, "TOPRIGHT", 8, 2)
+        questScroll.ScrollBar:SetPoint("BOTTOMLEFT", questScroll, "BOTTOMRIGHT", 8, -4)
     end
 
-    -- Remove any custom artificial black backgrounds
+    -- Cleanup legacy background textures
     if detailsFrame.BackingBg then
         detailsFrame.BackingBg:Hide()
     end
@@ -224,28 +235,50 @@ function OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
         if self.adjusting then return end
         self.adjusting = true
 
-        -- Double-wide: expand QuestMapFrame and WorldMapFrame to fit 320px list + 308px details
+        -- Double-wide: expand QuestMapFrame and WorldMapFrame to fit two 330px columns
         local totalQuestAreaWidth = questListWidth + gap + detailsWidth
         qmFrame:SetWidth(totalQuestAreaWidth)
         wmFrame:SetWidth(4 + cWidth + totalQuestAreaWidth + 4)
 
-        -- Anchor DetailsFrame side-by-side to the right of QuestsFrame, full height
+        -- Anchor DetailsFrame side-by-side to the right of QuestsFrame, full height (width 330)
         detailsFrame:ClearAllPoints()
         detailsFrame:SetPoint("TOPLEFT", questsFrame, "TOPRIGHT", gap, 0)
         detailsFrame:SetPoint("BOTTOMLEFT", questsFrame, "BOTTOMRIGHT", gap, 0)
         detailsFrame:SetWidth(detailsWidth)
 
-        -- Restore DetailsFrame ScrollBar to native Blizzard MinimalScrollBar anchors
+        -- Details scroll frame leaves exact 22px gutter on the right
+        if detailsScroll then
+            detailsScroll:ClearAllPoints()
+            detailsScroll:SetPoint("TOPLEFT", detailsFrame, "TOPLEFT", 5, -43)
+            detailsScroll:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", -22, 23)
+        end
+
+        -- Details 22px scrollbar gutter background matching Quest List identically
+        if not detailsFrame.ScrollGutterBg then
+            local bg = detailsFrame:CreateTexture(nil, "BACKGROUND", nil, -5)
+            bg:SetColorTexture(0.06, 0.06, 0.07, 0.95)
+            detailsFrame.ScrollGutterBg = bg
+        end
+        detailsFrame.ScrollGutterBg:ClearAllPoints()
+        detailsFrame.ScrollGutterBg:SetPoint("TOPLEFT", detailsFrame, "TOPRIGHT", -22, -43)
+        detailsFrame.ScrollGutterBg:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", 0, 23)
+        detailsFrame.ScrollGutterBg:Show()
+
+        -- Details ScrollBar centered in the 22px gutter identically to Quest List
         if detailsScroll and detailsScroll.ScrollBar then
             detailsScroll.ScrollBar:ClearAllPoints()
-            detailsScroll.ScrollBar:SetPoint("TOPLEFT", detailsScroll, "TOPRIGHT", 13, 17)
-            detailsScroll.ScrollBar:SetPoint("BOTTOMLEFT", detailsScroll, "BOTTOMRIGHT", 13, -27)
+            detailsScroll.ScrollBar:SetPoint("TOPLEFT", detailsScroll, "TOPRIGHT", 8, 17)
+            detailsScroll.ScrollBar:SetPoint("BOTTOMLEFT", detailsScroll, "BOTTOMRIGHT", 8, -27)
         end
 
         self.adjusting = false
     else
         if self.adjusting then return end
         self.adjusting = true
+
+        if detailsFrame.ScrollGutterBg then
+            detailsFrame.ScrollGutterBg:Hide()
+        end
 
         -- Single-column width (List only, no details)
         local singleQuestAreaWidth = questListWidth
