@@ -1,0 +1,15 @@
+## Interface: 16001, 11200, 20400, 30300, 110000
+## Title: OneWorldMap
+## Notes: Modular hybrid World Map shell with DoubleWide Quest Log, Zone Metadata Sidebar, and Live Coordinates.
+## Author: Antigravity
+## Version: 0.0.1
+## IconTexture: Interface\Icons\inv_misc_map02
+## SavedVariables: OneWorldMapDB
+## OptionalDeps: OnePanelUtils, OneSwatter
+
+Data\ZoneData.lua
+Core.lua
+Shell.lua
+DoubleWide.lua
+Sidebar.lua
+Coordinates.lua

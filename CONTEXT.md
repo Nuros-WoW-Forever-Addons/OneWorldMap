@@ -85,42 +85,30 @@ Move completed tasks from Upcoming Backlog to Recent Completed Work.
 If user-facing features or commands changed, update README.md and append a new section in CHANGELOG.md.
 Document newly discovered backlog items or engine edge cases in Upcoming Backlog.
 ✅ Recent Completed Work (Latest Spins)
-Spin 0.1.0-dev (Specification & Scaffolding)
-Architectural decision locked: Hybrid Shell architecture chosen over full canvas rewrite to preserve Blizzard quest blobs and third-party pin compatibility.
-Layout approved: External Left Metadata Sidebar with bottom-left [ < ] collapse chevron + persistent DoubleWide right Quest Log (QuestsFrame + DetailsFrame side-by-side).
-Finalized feature matrix: Zone metadata, gathering/fishing thresholds, instance brackets, movement fade, coordinates ticker, flight master pins, fog reveal, and cave detection.
+Spin 0.0.1-dev (Scaffold & Core Map Functionality)
+- Addon Structure: Created `OneWorldMap.toc`, `Core.lua`, and `Data/ZoneData.lua` baseline.
+- Shell Frame & Positioning Engine (`Shell.lua`): Movable WorldMapFrame with position/scale persistence (`OneWorldMapDB.window`) and non-intrusive movement fade.
+- DoubleWide Quest Log Module (`DoubleWide.lua`): Anchored `QuestMapFrame.DetailsFrame` side-by-side with `QuestMapFrame.QuestsFrame`, maintaining quest list visibility while reviewing details.
+- Left Metadata Panel (`Sidebar.lua`): Collapsible left drawer showing zone level brackets, gathering node thresholds (Herbalism, Mining, Fishing), and dungeon brackets with a `[ < ]` / `[ > ]` toggle chevron.
+- Dual Coordinate Bar (`Coordinates.lua`): 10 Hz throttled ticker on bottom canvas and sidebar with canvas bounds checking and dungeon nil-guards.
+- Workspace Tooling: Registered `OneWorldMap` in `sync-live.sh` and `rollback-live.sh`.
+
 📋 Living Roadmap & Upcoming Backlog (Next Spins)
 Priority 1: High Priority (Immediate Next Spin)
-[ ] Scaffold Addon Structure: Create OneMap.toc, Core.lua, and Data/ZoneData.lua baseline.
-[ ] Shell Frame & Positioning Engine (Shell.lua):
-Implement custom movable/resizable backdrop frame.
-Hide default Blizzard BorderFrame and title chrome without breaking map events.
-Re-parent and anchor WorldMapFrame.ScrollContainer cleanly inside the shell.
-Wire position/scale persistence to OneMapDB.profile.window.
-[ ] DoubleWide Quest Log Module (DoubleWide.lua):
-Anchor QuestMapFrame.DetailsFrame to QuestMapFrame.QuestsFrame:TOPRIGHT.
-Override QuestMapFrame_ShowQuestDetails to prevent hiding QuestsFrame.
-Hide or repurpose the native Back button.
-Dynamically adapt outer shell width when quest details open/close.
-Priority 2: Medium Priority (Core Additions)
-[ ] Left Metadata Panel (Sidebar.lua):
-Create external drawer frame docked to the left edge of the main map frame.
-Add bottom-left [ < ] / [ > ] collapse button.
-Render dynamic text for current uiMapID: Quest level bracket, Herbalism, Mining, Skinning, and Fishing skill minimums.
-[ ] Dual Coordinate Bar (Coordinates.lua):
-Implement 10 Hz throttled ticker on the bottom status frame.
-Read C_Map.GetPlayerMapPosition and normalized cursor coords with nil/out-of-bounds safety.
-[ ] Movement Fade Controller:
-Register PLAYER_STARTED_MOVING / PLAYER_STOPPED_MOVING to smoothly lerp frame alpha to 0.35 while preserving interactivity on mouse hover.
-Priority 3: Enhancements & Exploration
-[ ] Fog-of-War Reveal Layer (MapReveal.lua):
-Query C_Map.GetMapArtLayers and paint un-explored tiles at 50% opacity under native quest POIs.
-[ ] Flight Master & Dungeon Pins (Pins.lua):
-Injected custom canvas pins with faction-filtered flight masters and dungeon level brackets.
-[ ] Cave & Barrow Detection (Interiors.lua):
-Detect registered classic subzones/caves on map open and display [Cave/Dungeon Overlay] toggle.
+[ ] Live in-game verification on WoW Forever Beta (Interface 16001).
+[ ] Fog-of-War Reveal Layer (`MapReveal.lua`):
+    Query `C_Map.GetMapArtLayers` and render un-explored tiles at 50% opacity under native quest POIs.
+[ ] Flight Master & Dungeon Pins (`Pins.lua`):
+    Custom canvas pins for Flight Masters (Horde, Alliance, Neutral) and dungeon entrance POIs with tooltip brackets.
+[ ] Cave & Barrow Detection (`Interiors.lua`):
+    Subzone detection with `[Cave/Dungeon Overlay]` toggle button for interior maps.
+
+Priority 2: Medium Priority (Core Additions & Integrations)
 [ ] OneSwatter & OnePanel Integration:
-Hook into OneSwatter debug logging and expose settings tab inside OnePanel.
+    Hook into OneSwatter debug logging and expose settings tab inside OnePanel.
+[ ] Custom Map Theme Styling:
+    Dark slate / signature OneSuite border styling matching `DoubleQuestPaneRender.png`.
+
 🧪 Testing & Verification Guide
 Shell Movement: Drag the title bar to move the map. Reload UI (/reload) and verify the window restores to the exact saved coordinates.
 DoubleWide Quest Selection: Open the map, click any quest in the list. Verify that the Quest List remains fully visible while Quest Details render immediately to its right. Confirm selecting another quest updates the details pane without list jumping.
