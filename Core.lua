@@ -13,7 +13,7 @@ local defaults = {
     },
     sidebar = {
         collapsed = false,
-        width = 280,
+        width = 290,
         collapsedHeaders = {},
     },
     questLog = {
@@ -53,6 +53,11 @@ local function InitializeDB()
                     OneWorldMapDB[k] = v
                 end
             end
+        end
+    end
+    if OneWorldMapDB and OneWorldMapDB.sidebar then
+        if not OneWorldMapDB.sidebar.width or OneWorldMapDB.sidebar.width < 290 then
+            OneWorldMapDB.sidebar.width = 290
         end
     end
     OneWorldMap.db = OneWorldMapDB

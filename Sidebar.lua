@@ -90,7 +90,10 @@ function OneWorldMap.Sidebar:Init()
     local wmFrame = WorldMapFrame
     if not wmFrame then return end
 
-    local width = (OneWorldMapDB and OneWorldMapDB.sidebar and OneWorldMapDB.sidebar.width) or 280
+    local width = math.max(290, (OneWorldMapDB and OneWorldMapDB.sidebar and OneWorldMapDB.sidebar.width) or 290)
+    if OneWorldMapDB and OneWorldMapDB.sidebar then
+        OneWorldMapDB.sidebar.width = width
+    end
 
     -- 1. Create sidebar container frame anchored solidly to WorldMapFrame
     local frame = CreateFrame("Frame", "OneWorldMap_SidebarFrame", wmFrame, BackdropTemplateMixin and "BackdropTemplate")
@@ -252,6 +255,9 @@ function OneWorldMap.Sidebar:UpdateState()
     local wmFrame = WorldMapFrame
     if not wmFrame or not self.frame then return end
 
+    local width = math.max(290, (OneWorldMapDB and OneWorldMapDB.sidebar and OneWorldMapDB.sidebar.width) or 290)
+    self.frame:SetWidth(width)
+
     -- Re-assert anchor points to guarantee solid docking
     self.frame:ClearAllPoints()
     self.frame:SetPoint("TOPRIGHT", wmFrame, "TOPLEFT", 0, 0)
@@ -338,10 +344,13 @@ function OneWorldMap.Sidebar:RefreshTable()
         OneWorldMapDB.sidebar.collapsedHeaders = collapsedHeaders
     end
 
+    local width = math.max(290, (OneWorldMapDB and OneWorldMapDB.sidebar and OneWorldMapDB.sidebar.width) or 290)
+    self.frame:SetWidth(width)
+    local contentWidth = width - 46
+    self.scrollChild:SetWidth(contentWidth)
+
     local elIdx = 1
     local yOffset = -4
-    local contentWidth = self.scrollFrame:GetWidth() or 234
-    if contentWidth < 150 then contentWidth = 234 end
 
     -- Helper to add a grey button header with centered text (no - or +)
     local function AddCategoryHeader(key, titleText)
