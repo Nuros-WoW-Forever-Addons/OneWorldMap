@@ -92,17 +92,34 @@ function OneWorldMap.Sidebar:Init()
 
     local width = (OneWorldMapDB and OneWorldMapDB.sidebar and OneWorldMapDB.sidebar.width) or 280
 
-    -- 1. Create sidebar frame using authentic Blizzard bronze border
-    local frame = CreateFrame("Frame", "OneWorldMap_SidebarFrame", wmFrame, "NineSlicePanelTemplate")
+    -- 1. Create sidebar container frame anchored solidly to WorldMapFrame
+    local frame = CreateFrame("Frame", "OneWorldMap_SidebarFrame", wmFrame, BackdropTemplateMixin and "BackdropTemplate")
     self.frame = frame
     frame:SetWidth(width)
+    frame:ClearAllPoints()
     frame:SetPoint("TOPRIGHT", wmFrame, "TOPLEFT", 0, 0)
     frame:SetPoint("BOTTOMRIGHT", wmFrame, "BOTTOMLEFT", 0, 0)
+    frame:SetFrameStrata(wmFrame:GetFrameStrata())
+    frame:SetFrameLevel(wmFrame:GetFrameLevel() + 1)
 
-    -- Apply authentic Blizzard bronze Dialog NineSlice layout matching GameMenu / WorldMap
+    -- Dark background fill
+    local bg = frame:CreateTexture(nil, "BACKGROUND", nil, -5)
+    bg:SetPoint("TOPLEFT", frame, "TOPLEFT", 6, -6)
+    bg:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -6, 6)
+    bg:SetColorTexture(0.08, 0.08, 0.09, 0.95)
+    frame.Bg = bg
+
+    -- Authentic Blizzard Bronze border: try child NineSlice with Dialog layout, fallback to bronze Backdrop
+    local borderChild = CreateFrame("Frame", nil, frame, "NineSlicePanelTemplate")
+    borderChild:SetAllPoints(frame)
+    frame.BorderChild = borderChild
+    local nineSliceLoaded = false
     if NineSliceUtil and NineSliceUtil.ApplyLayout then
-        NineSliceUtil.ApplyLayout(frame, "Dialog")
-    elseif frame.SetBackdrop then
+        local ok = pcall(NineSliceUtil.ApplyLayout, borderChild, "Dialog")
+        nineSliceLoaded = ok and borderChild.NineSlice and (borderChild.NineSlice.TopLeftCorner ~= nil)
+    end
+
+    if not nineSliceLoaded and frame.SetBackdrop then
         frame:SetBackdrop({
             bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
             edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
@@ -111,20 +128,11 @@ function OneWorldMap.Sidebar:Init()
             edgeSize = 32,
             insets = { left = 11, right = 12, top = 12, bottom = 11 },
         })
-        frame:SetBackdropColor(1, 1, 1, 1)
-        frame:SetBackdropBorderColor(0.9, 0.75, 0.45, 1) -- Warm gold/bronze tint
+        frame:SetBackdropColor(0.08, 0.08, 0.09, 0.95)
+        frame:SetBackdropBorderColor(0.78, 0.60, 0.30, 1.0) -- Authentic Blizzard bronze/gold tint
     end
 
-    -- Dark background fill behind the NineSlice
-    if not frame.Bg then
-        local bg = frame:CreateTexture(nil, "BACKGROUND", nil, -5)
-        bg:SetPoint("TOPLEFT", frame, "TOPLEFT", 6, -6)
-        bg:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -6, 6)
-        bg:SetColorTexture(0.08, 0.08, 0.09, 0.95)
-        frame.Bg = bg
-    end
-
-    -- Clean interior title (inside frame at the top, no protruding header plate)
+    -- Clean interior title (inside frame at the top)
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     title:SetPoint("TOP", frame, "TOP", 0, -14)
     title:SetText("Zone Details")
@@ -146,7 +154,7 @@ function OneWorldMap.Sidebar:Init()
     self.elements = {}
 
     -- 3. Gold Triangle Arrow Collapse Button at inner bottom-left of map canvas
-    -- Points RIGHT to collapse, points LEFT to expand
+    -- Points RIGHT to collapse into map, points LEFT to expand outward
     local canvas = wmFrame.ScrollContainer or wmFrame
     local toggleBtn = CreateFrame("Button", "OneWorldMap_SidebarToggleBtn", canvas)
     self.toggleBtn = toggleBtn
@@ -241,6 +249,14 @@ function OneWorldMap.Sidebar:UpdateToggleArrow()
 end
 
 function OneWorldMap.Sidebar:UpdateState()
+    local wmFrame = WorldMapFrame
+    if not wmFrame or not self.frame then return end
+
+    -- Re-assert anchor points to guarantee solid docking
+    self.frame:ClearAllPoints()
+    self.frame:SetPoint("TOPRIGHT", wmFrame, "TOPLEFT", 0, 0)
+    self.frame:SetPoint("BOTTOMRIGHT", wmFrame, "BOTTOMLEFT", 0, 0)
+
     local isCollapsed = OneWorldMapDB and OneWorldMapDB.sidebar and OneWorldMapDB.sidebar.collapsed
     if isCollapsed then
         self.frame:Hide()
