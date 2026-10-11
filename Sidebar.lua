@@ -1,6 +1,7 @@
 -- OneWorldMap: Sidebar.lua
--- Left metadata drawer panel styled with the authentic Blizzard Game Menu bronze frame,
--- OnePanel_Character grey button headers, alternating-row data tables, and comprehensive gathering/fish data.
+-- Left metadata drawer panel styled with authentic Blizzard bronze borders matching WorldMapFrame/GameMenu,
+-- OnePanel_Character grey button headers with centered profession titles, wide untruncated data rows,
+-- and a gold/yellow triangle arrow collapse toggle button.
 
 OneWorldMap = OneWorldMap or {}
 OneWorldMap.Sidebar = {}
@@ -17,7 +18,7 @@ local function StyleButtonAsGrey(btn)
     if not btn or btn.isStyledAsGrey then return end
     btn.isStyledAsGrey = true
 
-    -- Hide template textures if present
+    -- Hide default button template textures if present
     local btnName = btn.GetName and btn:GetName()
     local oldLeft = btn.Left or (btnName and _G[btnName .. "Left"])
     local oldMiddle = btn.Middle or (btnName and _G[btnName .. "Middle"])
@@ -32,7 +33,6 @@ local function StyleButtonAsGrey(btn)
     left:SetPoint("BOTTOMLEFT", btn, "BOTTOMLEFT", 0, 0)
     left:SetTexture(BTN_DISABLED_UP)
     left:SetTexCoord(0, 0.09375, 0, 0.6875)
-    btn.GreyLeft = left
 
     local right = btn:CreateTexture(nil, "BACKGROUND")
     right:SetSize(12, 22)
@@ -40,14 +40,12 @@ local function StyleButtonAsGrey(btn)
     right:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT", 0, 0)
     right:SetTexture(BTN_DISABLED_UP)
     right:SetTexCoord(0.53125, 0.625, 0, 0.6875)
-    btn.GreyRight = right
 
     local middle = btn:CreateTexture(nil, "BACKGROUND")
     middle:SetPoint("TOPLEFT", left, "TOPRIGHT", 0, 0)
     middle:SetPoint("BOTTOMRIGHT", right, "BOTTOMLEFT", 0, 0)
     middle:SetTexture(BTN_DISABLED_UP)
     middle:SetTexCoord(0.09375, 0.53125, 0, 0.6875)
-    btn.GreyMiddle = middle
 
     local hlLeft = btn:CreateTexture(nil, "HIGHLIGHT")
     hlLeft:SetSize(12, 22)
@@ -92,16 +90,19 @@ function OneWorldMap.Sidebar:Init()
     local wmFrame = WorldMapFrame
     if not wmFrame then return end
 
-    local width = (OneWorldMapDB and OneWorldMapDB.sidebar and OneWorldMapDB.sidebar.width) or 240
+    local width = (OneWorldMapDB and OneWorldMapDB.sidebar and OneWorldMapDB.sidebar.width) or 280
 
-    -- 1. Create sidebar frame with Game Menu bronze frame styling
-    local frame = CreateFrame("Frame", "OneWorldMap_SidebarFrame", wmFrame, BackdropTemplateMixin and "BackdropTemplate")
+    -- 1. Create sidebar frame using authentic Blizzard bronze border
+    local frame = CreateFrame("Frame", "OneWorldMap_SidebarFrame", wmFrame, "NineSlicePanelTemplate")
     self.frame = frame
     frame:SetWidth(width)
     frame:SetPoint("TOPRIGHT", wmFrame, "TOPLEFT", 0, 0)
     frame:SetPoint("BOTTOMRIGHT", wmFrame, "BOTTOMLEFT", 0, 0)
 
-    if frame.SetBackdrop then
+    -- Apply authentic Blizzard bronze Dialog NineSlice layout matching GameMenu / WorldMap
+    if NineSliceUtil and NineSliceUtil.ApplyLayout then
+        NineSliceUtil.ApplyLayout(frame, "Dialog")
+    elseif frame.SetBackdrop then
         frame:SetBackdrop({
             bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
             edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
@@ -111,42 +112,72 @@ function OneWorldMap.Sidebar:Init()
             insets = { left = 11, right = 12, top = 12, bottom = 11 },
         })
         frame:SetBackdropColor(1, 1, 1, 1)
-        frame:SetBackdropBorderColor(1, 1, 1, 1)
+        frame:SetBackdropBorderColor(0.9, 0.75, 0.45, 1) -- Warm gold/bronze tint
     end
 
-    -- Game Menu style top header plate
-    local headerPlate = frame:CreateTexture(nil, "ARTWORK")
-    headerPlate:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Header")
-    headerPlate:SetSize(160, 42)
-    headerPlate:SetPoint("TOP", frame, "TOP", 0, 12)
+    -- Dark background fill behind the NineSlice
+    if not frame.Bg then
+        local bg = frame:CreateTexture(nil, "BACKGROUND", nil, -5)
+        bg:SetPoint("TOPLEFT", frame, "TOPLEFT", 6, -6)
+        bg:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -6, 6)
+        bg:SetColorTexture(0.08, 0.08, 0.09, 0.95)
+        frame.Bg = bg
+    end
 
-    local headerText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    headerText:SetPoint("TOP", headerPlate, "TOP", 0, -14)
-    headerText:SetText("Zone Details")
-    self.headerText = headerText
+    -- Clean interior title (inside frame at the top, no protruding header plate)
+    local title = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    title:SetPoint("TOP", frame, "TOP", 0, -14)
+    title:SetText("Zone Details")
+    title:SetTextColor(1.0, 0.82, 0.0) -- Gold
+    self.title = title
 
     -- 2. Scrollable Table Container
     local scrollFrame = CreateFrame("ScrollFrame", "OneWorldMap_SidebarScrollFrame", frame, "UIPanelScrollFrameTemplate")
     self.scrollFrame = scrollFrame
-    scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 12, -26)
-    scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -32, 12)
+    scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 14, -38)
+    scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -32, 14)
 
     local scrollChild = CreateFrame("Frame", "OneWorldMap_SidebarScrollChild", scrollFrame)
-    scrollChild:SetWidth(width - 44)
+    scrollChild:SetWidth(width - 46)
     scrollChild:SetHeight(200)
     scrollFrame:SetScrollChild(scrollChild)
     self.scrollChild = scrollChild
 
     self.elements = {}
 
-    -- 3. Map Canvas Collapse Toggle Button (inner bottom-left corner of the map)
+    -- 3. Gold Triangle Arrow Collapse Button at inner bottom-left of map canvas
+    -- Points RIGHT to collapse, points LEFT to expand
     local canvas = wmFrame.ScrollContainer or wmFrame
-    local toggleBtn = CreateFrame("Button", "OneWorldMap_SidebarToggleBtn", canvas, "UIPanelButtonTemplate")
+    local toggleBtn = CreateFrame("Button", "OneWorldMap_SidebarToggleBtn", canvas)
     self.toggleBtn = toggleBtn
-    toggleBtn:SetSize(24, 24)
+    toggleBtn:SetSize(22, 22)
     toggleBtn:SetPoint("BOTTOMLEFT", canvas, "BOTTOMLEFT", 6, 6)
     toggleBtn:SetFrameLevel(canvas:GetFrameLevel() + 20)
-    toggleBtn:SetText("<")
+
+    local normBg = toggleBtn:CreateTexture(nil, "BACKGROUND")
+    normBg:SetAllPoints()
+    normBg:SetTexture("Interface\\Buttons\\UI-SquareButton-Up")
+
+    local pushBg = toggleBtn:CreateTexture(nil, "BORDER")
+    pushBg:SetAllPoints()
+    pushBg:SetTexture("Interface\\Buttons\\UI-SquareButton-Down")
+
+    local hl = toggleBtn:CreateTexture(nil, "HIGHLIGHT")
+    hl:SetAllPoints()
+    hl:SetTexture("Interface\\Buttons\\UI-Common-MouseHilight")
+    hl:SetBlendMode("ADD")
+
+    local arrow = toggleBtn:CreateTexture(nil, "ARTWORK")
+    arrow:SetSize(14, 14)
+    arrow:SetPoint("CENTER", toggleBtn, "CENTER", 0, 0)
+    toggleBtn.Arrow = arrow
+
+    toggleBtn:SetScript("OnMouseDown", function()
+        arrow:SetPoint("CENTER", toggleBtn, "CENTER", 1, -1)
+    end)
+    toggleBtn:SetScript("OnMouseUp", function()
+        arrow:SetPoint("CENTER", toggleBtn, "CENTER", 0, 0)
+    end)
 
     toggleBtn:SetScript("OnClick", function()
         if OneWorldMapDB and OneWorldMapDB.sidebar then
@@ -189,20 +220,35 @@ function OneWorldMap.Sidebar:Init()
     self:RefreshTable()
 end
 
+function OneWorldMap.Sidebar:UpdateToggleArrow()
+    if not self.toggleBtn or not self.toggleBtn.Arrow then return end
+    local isCollapsed = OneWorldMapDB and OneWorldMapDB.sidebar and OneWorldMapDB.sidebar.collapsed
+
+    -- Points RIGHT to collapse, points LEFT to expand
+    if isCollapsed then
+        -- Collapsed -> arrow points LEFT (<) to expand drawer
+        local ok = pcall(function() self.toggleBtn.Arrow:SetAtlas("Navigation_Chevron_Left", true) end)
+        if not ok or not self.toggleBtn.Arrow:GetTexture() then
+            self.toggleBtn.Arrow:SetTexture("Interface\\Buttons\\UI-SpellbookPage-PrevPage-Up")
+        end
+    else
+        -- Open -> arrow points RIGHT (>) to collapse drawer
+        local ok = pcall(function() self.toggleBtn.Arrow:SetAtlas("Navigation_Chevron_Right", true) end)
+        if not ok or not self.toggleBtn.Arrow:GetTexture() then
+            self.toggleBtn.Arrow:SetTexture("Interface\\Buttons\\UI-SpellbookPage-NextPage-Up")
+        end
+    end
+end
+
 function OneWorldMap.Sidebar:UpdateState()
     local isCollapsed = OneWorldMapDB and OneWorldMapDB.sidebar and OneWorldMapDB.sidebar.collapsed
     if isCollapsed then
         self.frame:Hide()
-        if self.toggleBtn then
-            self.toggleBtn:SetText(">")
-        end
     else
         self.frame:Show()
-        if self.toggleBtn then
-            self.toggleBtn:SetText("<")
-        end
         self:RefreshTable()
     end
+    self:UpdateToggleArrow()
 end
 
 local function GetOrCreateHeaderButton(parent, elements, index)
@@ -213,9 +259,9 @@ local function GetOrCreateHeaderButton(parent, elements, index)
         StyleButtonAsGrey(btn)
 
         local fontStr = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        fontStr:SetPoint("LEFT", btn, "LEFT", 10, 0)
-        fontStr:SetPoint("RIGHT", btn, "RIGHT", -10, 0)
-        fontStr:SetJustifyH("LEFT")
+        fontStr:SetPoint("LEFT", btn, "LEFT", 8, 0)
+        fontStr:SetPoint("RIGHT", btn, "RIGHT", -8, 0)
+        fontStr:SetJustifyH("CENTER")
         btn.Text = fontStr
 
         elements[index] = btn
@@ -235,13 +281,13 @@ local function GetOrCreateDataRow(parent, elements, index)
         row.bg = bg
 
         local val = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightRight")
-        val:SetPoint("RIGHT", row, "RIGHT", -6, 0)
+        val:SetPoint("RIGHT", row, "RIGHT", -8, 0)
         val:SetJustifyH("RIGHT")
         row.val = val
 
         local label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
         label:SetPoint("LEFT", row, "LEFT", 8, 0)
-        label:SetPoint("RIGHT", val, "LEFT", -8, 0)
+        label:SetPoint("RIGHT", val, "LEFT", -6, 0)
         label:SetJustifyH("LEFT")
         label:SetWordWrap(false)
         row.label = label
@@ -278,10 +324,10 @@ function OneWorldMap.Sidebar:RefreshTable()
 
     local elIdx = 1
     local yOffset = -4
-    local contentWidth = self.scrollFrame:GetWidth() or 195
-    if contentWidth < 120 then contentWidth = 195 end
+    local contentWidth = self.scrollFrame:GetWidth() or 234
+    if contentWidth < 150 then contentWidth = 234 end
 
-    -- Helper to add a grey button header with left-justified - / +
+    -- Helper to add a grey button header with centered text (no - or +)
     local function AddCategoryHeader(key, titleText)
         local isCollapsed = collapsedHeaders[key] == true
         local btn = GetOrCreateHeaderButton(self.scrollChild, self.elements, elIdx)
@@ -291,8 +337,7 @@ function OneWorldMap.Sidebar:RefreshTable()
         btn:SetSize(contentWidth, 22)
         btn:SetPoint("TOPLEFT", self.scrollChild, "TOPLEFT", 0, yOffset)
 
-        local prefix = isCollapsed and "+ " or "- "
-        btn.Text:SetText(prefix .. titleText)
+        btn.Text:SetText(titleText)
 
         btn:SetScript("OnClick", function()
             collapsedHeaders[key] = not collapsedHeaders[key]
@@ -303,7 +348,7 @@ function OneWorldMap.Sidebar:RefreshTable()
         return not isCollapsed
     end
 
-    -- Helper to add an alternating data row with padding
+    -- Helper to add an alternating data row with ample space
     local dataRowCounter = 0
     local function AddDataRow(labelStr, valStr, isMuted)
         dataRowCounter = dataRowCounter + 1
@@ -332,11 +377,11 @@ function OneWorldMap.Sidebar:RefreshTable()
     end
 
     if info then
-        -- 1. Zone Info Header (Zone Name)
+        -- 1. Zone Info Header (Centered Zone Name)
         local isZoneExpanded = AddCategoryHeader("zone", info.name)
         if isZoneExpanded then
             dataRowCounter = 0
-            AddDataRow("Level Range:", string.format("%d - %d", info.minLevel or 1, info.maxLevel or 60))
+            AddDataRow("Level Range", string.format("%d - %d", info.minLevel or 1, info.maxLevel or 60))
         end
 
         -- 2. Herbalism Header
@@ -404,7 +449,7 @@ function OneWorldMap.Sidebar:RefreshTable()
             end
         end
     else
-        -- Unrecognized / non-cataloged zone
+        -- Uncataloged zone
         local currentName = zoneName or (uiMapID and ("Zone " .. tostring(uiMapID))) or "Unknown Zone"
         AddCategoryHeader("zone", currentName)
         dataRowCounter = 0
