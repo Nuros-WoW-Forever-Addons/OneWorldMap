@@ -19,4 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Coordinate Redundancy & Default Suppression (`Coordinates.lua`)**: Added deep recursive detection and suppression of default unstyled coordinates (stacked cursor/player readout at bottom-left), ensuring only the preferred high-contrast black background pill box is shown.
-- **DoubleWide Quest Persistence (`DoubleWide.lua`)**: Intercepted `QuestsFrame.Hide` and dynamic Blizzard update triggers so the quest list remains persistently visible on the left while quest details render side-by-side on the right.
+- **DoubleWide Quest Persistence (`DoubleWide.lua`)**: Intercepted `QuestMapFrame.QuestsFrame.ScrollFrame.Hide` (the actual container holding quest headers and titles) to ensure the quest list stays visible side-by-side with details.
+- **Scrollbar Anchoring & Bounds (`DoubleWide.lua`)**: Explicitly anchored and constrained `QuestMapDetailsScrollFrame.ScrollBar` within `DetailsFrame` bounds (`-8, -48` and `-8, 28`), preventing the scrollbar from floating off the panel.
+- **Engine-Accurate Column Sizing (`DoubleWide.lua`)**: Adjusted column widths to match the native XML geometry (330 px list column + 308 px detail column) with safe base width caching.
