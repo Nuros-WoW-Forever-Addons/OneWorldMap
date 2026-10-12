@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Left Zone Metadata Sidebar (`Sidebar.lua`)**: Collapsible side drawer displaying zone level ranges, Herbalism/Mining/Fishing gathering thresholds, and local dungeon brackets with a `[ < ]` / `[ > ]` toggle.
 - **Throttled Coordinates Bar (`Coordinates.lua`)**: 10 Hz ticker bar showing `Player: XX.X, YY.Y | Cursor: XX.X, YY.Y` with canvas bounds validation and dungeon nil-guards.
 - **Static Zone Database (`Data/ZoneData.lua`)**: Baseline database mapping `uiMapID` to level ranges, gathering thresholds, and dungeon recommendations.
-- **Slash Command Handler (`Core.lua`)**: Registered `/oneworldmap`, `/owm`, `/onemap`, and `/om` commands with `/owm reset`, `/owm sidebar`, `/owm coords`, and `/owm fade`.
+- **Fog-of-War Exploration Reveal (`MapReveal.lua`, `Data/FogDataForever.lua`, `Data/FogDataStandard.lua`)**: Transparent exploration overlay reveal module for modern Retail/Classic engine (11.x, Interface 16001). Unexplored map terrain is displayed with configurable opacity (default 50% / `fogAlpha = 0.50`) beneath native pins and quest objective blobs, showing roads, topography, and boundaries seamlessly without combat taint. Includes full tile database coverage for all 45 Classic zones, custom WoW Forever zones (Zephras Isle, Riverglades, Mount Hyjal, Shen'dralas), and standard fallback maps.
+- **Slash Command Handler (`Core.lua`)**: Registered `/oneworldmap`, `/owm`, `/onemap`, and `/om` commands with `/owm reset`, `/owm sidebar`, `/owm coords`, `/owm doublewide`, `/owm fade`, `/owm fog`, and `/owm fogalpha <0.1-1.0>`.
 
 ### Fixed
 - **Coordinate Redundancy & Default Suppression (`Coordinates.lua`)**: Added deep recursive detection and suppression of default unstyled coordinates (stacked cursor/player readout at bottom-left), ensuring only the preferred high-contrast black background pill box is shown.

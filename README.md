@@ -12,7 +12,7 @@ Part of the **OneSuite** family of addons.
 - 🗺️ **Collapsible Zone Metadata Drawer**: Anchored to the left edge of the map frame. Automatically surfaces current zone level brackets, gathering node requirements (Herbalism, Mining, Fishing), and local dungeon level ranges, with a quick `[ < ]` toggle button.
 - 📍 **Dual Real-Time Coordinates**: High-efficiency 10 Hz throttled ticker displaying `Player: XX.X, YY.Y | Cursor: XX.X, YY.Y` with canvas bounds safety and instance protection.
 - 🪟 **Movable & Resizable Hybrid Shell**: Detaches from rigid screen constraints. Drag anywhere on the header to move, and scale freely with settings saved across sessions in `OneWorldMapDB`.
-- 🏃 **Movement Fade**: Automatically fades map opacity while your character is moving so you never run blindly into danger, smoothly restoring full opacity when stopped.
+- 🌫️ **Fog-of-War Exploration Reveal**: Renders undiscovered map terrain at a customizable opacity (default 50%), revealing roads, rivers, terrain features, and topography beneath native pins and quest blobs. Includes full database support for Classic and custom WoW Forever zones.
 - 🛡️ **Zero-Taint Architecture**: Preserves Blizzard's protected action mechanics and core map event pipeline without replacing or breaking `WorldMapFrame`.
 
 ---
@@ -50,6 +50,8 @@ Then start or reload World of Warcraft (`/reload`).
 | `/owm coords` | Toggle coordinate display on or off |
 | `/owm doublewide` | Toggle DoubleWide quest log layout mode |
 | `/owm fade` | Toggle movement fading on or off |
+| `/owm fog` | Toggle Fog-of-War exploration reveal |
+| `/owm fogalpha <0.1-1.0>` | Set Fog-of-War reveal opacity (default: 0.50) |
 
 ---
 

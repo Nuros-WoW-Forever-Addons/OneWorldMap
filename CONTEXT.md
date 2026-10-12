@@ -91,13 +91,13 @@ Spin 0.0.1-dev (Scaffold & Core Map Functionality)
 - DoubleWide Quest Log Module (`DoubleWide.lua`): Anchored `QuestMapFrame.DetailsFrame` side-by-side with `QuestMapFrame.QuestsFrame`, maintaining quest list visibility while reviewing details.
 - Left Metadata Panel (`Sidebar.lua`): Collapsible left drawer showing zone level brackets, gathering node thresholds (Herbalism, Mining, Fishing), and dungeon brackets with a `[ < ]` / `[ > ]` toggle chevron.
 - Dual Coordinate Bar (`Coordinates.lua`): 10 Hz throttled ticker on bottom canvas and sidebar with canvas bounds checking and dungeon nil-guards.
+- DoubleWide Quest Log Symmetry & Gutter Refinements (`DoubleWide.lua`): Identical 330 px column widths, matching 22 px scrollbar gutters, pre-anchored combat-safe frames with zero taint delays.
+- Fog-of-War Exploration Reveal (`MapReveal.lua`, `Data/FogDataForever.lua`, `Data/FogDataStandard.lua`): Unexplored map exploration reveal module for modern Retail/Classic engine (11.x, Interface 16001). Unexplored map terrain is displayed with configurable opacity (default 50% / `fogAlpha = 0.50`) beneath native pins and quest objective blobs, showing roads, topography, and boundaries seamlessly without combat taint. Includes full tile database coverage for all 45 Classic zones, custom WoW Forever zones (Zephras Isle, Riverglades, Mount Hyjal, Shen'dralas), and standard fallback maps.
 - Workspace Tooling: Registered `OneWorldMap` in `sync-live.sh` and `rollback-live.sh`.
 
 📋 Living Roadmap & Upcoming Backlog (Next Spins)
 Priority 1: High Priority (Immediate Next Spin)
 [ ] Live in-game verification on WoW Forever Beta (Interface 16001).
-[ ] Fog-of-War Reveal Layer (`MapReveal.lua`):
-    Query `C_Map.GetMapArtLayers` and render un-explored tiles at 50% opacity under native quest POIs.
 [ ] Flight Master & Dungeon Pins (`Pins.lua`):
     Custom canvas pins for Flight Masters (Horde, Alliance, Neutral) and dungeon entrance POIs with tooltip brackets.
 [ ] Cave & Barrow Detection (`Interiors.lua`):

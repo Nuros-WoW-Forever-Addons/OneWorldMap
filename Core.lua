@@ -27,6 +27,8 @@ local defaults = {
     features = {
         showCoordinates = true,
         showFlightMasters = true,
+        revealFogOfWar = true,
+        fogAlpha = 0.50,
     },
 }
 
@@ -122,6 +124,22 @@ local function SlashCommandHandler(msg)
     elseif cmd == "fade" then
         OneWorldMapDB.ergonomics.fadeOnMove = not OneWorldMapDB.ergonomics.fadeOnMove
         OneWorldMap:Log("Movement fade: " .. tostring(OneWorldMapDB.ergonomics.fadeOnMove))
+    elseif cmd == "fog" then
+        if OneWorldMap.MapReveal and OneWorldMap.MapReveal.Toggle then
+            local state = OneWorldMap.MapReveal:Toggle()
+            OneWorldMap:Log("Fog-of-War reveal: " .. tostring(state))
+        else
+            OneWorldMapDB.features.revealFogOfWar = not OneWorldMapDB.features.revealFogOfWar
+            OneWorldMap:Log("Fog-of-War reveal: " .. tostring(OneWorldMapDB.features.revealFogOfWar))
+        end
+    elseif cmd == "fogalpha" then
+        local alpha = tonumber(arg)
+        if alpha and OneWorldMap.MapReveal and OneWorldMap.MapReveal.SetAlpha then
+            OneWorldMap.MapReveal:SetAlpha(alpha)
+            OneWorldMap:Log("Fog-of-War alpha set to: " .. tostring(OneWorldMapDB.features.fogAlpha))
+        else
+            OneWorldMap:Log("Current Fog-of-War alpha: " .. tostring(OneWorldMapDB.features.fogAlpha or 0.50) .. " (Usage: /owm fogalpha 0.1-1.0)")
+        end
     else
         print("|cff00ccff[OneWorldMap]|r Available commands:")
         print("  |cffffd100/owm reset|r — Reset map window position and scale")
@@ -129,6 +147,8 @@ local function SlashCommandHandler(msg)
         print("  |cffffd100/owm coords|r — Toggle live coordinates bar")
         print("  |cffffd100/owm doublewide|r — Toggle DoubleWide quest log")
         print("  |cffffd100/owm fade|r — Toggle movement fade")
+        print("  |cffffd100/owm fog|r — Toggle Fog-of-War exploration reveal")
+        print("  |cffffd100/owm fogalpha <0.1-1.0>|r — Adjust Fog-of-War opacity")
     end
 end
 

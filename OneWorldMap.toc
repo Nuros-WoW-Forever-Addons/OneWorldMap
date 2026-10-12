@@ -8,8 +8,11 @@
 ## OptionalDeps: OnePanelUtils, OneSwatter
 
 Data\ZoneData.lua
+Data\FogDataForever.lua
+Data\FogDataStandard.lua
 Core.lua
 Shell.lua
 DoubleWide.lua
 Sidebar.lua
 Coordinates.lua
+MapReveal.lua
