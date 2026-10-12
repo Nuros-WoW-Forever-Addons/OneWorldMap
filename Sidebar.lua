@@ -384,7 +384,11 @@ function OneWorldMap.Sidebar:RefreshTable()
         local isZoneExpanded = AddCategoryHeader("zone", info.name)
         if isZoneExpanded then
             dataRowCounter = 0
-            AddDataRow("Level Range", string.format("%d - %d", info.minLevel or 1, info.maxLevel or 60))
+            if info.isCity then
+                AddDataRow("Zone Type", "Capital City")
+            else
+                AddDataRow("Level Range", string.format("%d - %d", info.minLevel or 1, info.maxLevel or 60))
+            end
         end
 
         -- 2. Herbalism Header
