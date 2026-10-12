@@ -51,7 +51,9 @@ Then start or reload World of Warcraft (`/reload`).
 | `/owm doublewide` | Toggle DoubleWide quest log layout mode |
 | `/owm fade` | Toggle movement fading on or off |
 | `/owm fog` | Toggle Fog-of-War exploration reveal |
-| `/owm fogalpha <0.1-1.0>` | Set Fog-of-War reveal opacity (default: 0.50) |
+| `/owm fogalpha <0.1-1.0>` | Set Fog-of-War reveal opacity (default: 0.65) |
+| `/owm fogpreset <name>` | Apply fog tint preset (`charcoal`, `dark`, `blue`, `sepia`, `light`) |
+| `/owm fogcolor <r g b>` | Set custom fog tint RGB values (0.0 to 1.0) |
 
 ---
 

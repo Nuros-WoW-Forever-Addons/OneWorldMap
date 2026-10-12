@@ -1,6 +1,6 @@
 -- OneWorldMap: MapReveal.lua
 -- Fog-of-War exploration reveal module for WoW Forever (Modern Retail/Classic engine).
--- Hooks MapExplorationPinMixin to render unexplored map tiles at configurable opacity.
+-- Hooks MapExplorationPinMixin to render unexplored map tiles under a darkened, desaturated fog tint.
 
 local OneWorldMap = OneWorldMap or {}
 OneWorldMap.MapReveal = OneWorldMap.MapReveal or {}
@@ -8,6 +8,9 @@ local MapReveal = OneWorldMap.MapReveal
 
 local mod, floor, ceil, tonumber = math.fmod, math.floor, math.ceil, tonumber
 local ipairs, pairs = ipairs, pairs
+
+local DEFAULT_FOG_COLOR = { r = 0.38, g = 0.38, b = 0.45 }
+local DEFAULT_FOG_ALPHA = 0.65
 
 local function Clamp(val, min, max)
     val = tonumber(val) or min
@@ -19,8 +22,11 @@ end
 local function OnPinRefreshOverlays(pin, fullUpdate)
     if not pin or not pin.overlayTexturePool then return end
 
-    -- Restore any active explored overlays to full brightness and opacity
+    -- Restore any active explored overlays to full saturation, brightness, and opacity
     for texture in pin.overlayTexturePool:EnumerateActive() do
+        if texture.SetDesaturation then
+            texture:SetDesaturation(0)
+        end
         texture:SetVertexColor(1.0, 1.0, 1.0)
         texture:SetAlpha(1.0)
     end
@@ -63,10 +69,11 @@ local function OnPinRefreshOverlays(pin, fullUpdate)
         return
     end
 
-    local r = (db.fogColor and db.fogColor.r) or 1.0
-    local g = (db.fogColor and db.fogColor.g) or 1.0
-    local b = (db.fogColor and db.fogColor.b) or 1.0
-    local a = Clamp(db.fogAlpha or 0.50, 0.1, 1.0)
+    local fogColor = db.fogColor or DEFAULT_FOG_COLOR
+    local r = Clamp(fogColor.r or DEFAULT_FOG_COLOR.r, 0.0, 1.0)
+    local g = Clamp(fogColor.g or DEFAULT_FOG_COLOR.g, 0.0, 1.0)
+    local b = Clamp(fogColor.b or DEFAULT_FOG_COLOR.b, 0.0, 1.0)
+    local a = Clamp(db.fogAlpha or DEFAULT_FOG_ALPHA, 0.1, 1.0)
 
     local drawLayer, subLevel = pin.dataProvider:GetDrawLayer()
     local unexploredSubLevel = (subLevel or 0) - 1
@@ -126,6 +133,10 @@ local function OnPinRefreshOverlays(pin, fullUpdate)
                         texture:SetTexture(fileID, nil, nil, "TRILINEAR")
                     end
 
+                    -- Apply Darkened Fog Tint: full desaturation + charcoal/slate vertex tint + alpha
+                    if texture.SetDesaturation then
+                        texture:SetDesaturation(1)
+                    end
                     texture:SetVertexColor(r, g, b)
                     texture:SetAlpha(a)
                     texture:SetDrawLayer(drawLayer or "ARTWORK", unexploredSubLevel)
@@ -170,6 +181,40 @@ function MapReveal:SetAlpha(alpha)
     self:Refresh()
 end
 
+function MapReveal:SetColor(r, g, b)
+    if OneWorldMapDB and OneWorldMapDB.features then
+        OneWorldMapDB.features.fogColor = {
+            r = Clamp(r, 0.0, 1.0),
+            g = Clamp(g, 0.0, 1.0),
+            b = Clamp(b, 0.0, 1.0),
+        }
+    end
+    self:Refresh()
+end
+
+function MapReveal:SetPreset(name)
+    name = (name or ""):lower()
+    if name == "charcoal" or name == "default" then
+        self:SetColor(0.38, 0.38, 0.45)
+        self:SetAlpha(0.65)
+    elseif name == "dark" then
+        self:SetColor(0.22, 0.22, 0.25)
+        self:SetAlpha(0.75)
+    elseif name == "blue" or name == "mist" then
+        self:SetColor(0.28, 0.35, 0.48)
+        self:SetAlpha(0.65)
+    elseif name == "sepia" then
+        self:SetColor(0.45, 0.40, 0.32)
+        self:SetAlpha(0.60)
+    elseif name == "light" then
+        self:SetColor(0.55, 0.55, 0.60)
+        self:SetAlpha(0.45)
+    else
+        return false
+    end
+    return true
+end
+
 function MapReveal:SetEnabled(enabled)
     if OneWorldMapDB and OneWorldMapDB.features then
         OneWorldMapDB.features.revealFogOfWar = enabled and true or false
@@ -190,12 +235,12 @@ function MapReveal.Init()
             OneWorldMapDB.features.revealFogOfWar = true
         end
         if OneWorldMapDB.features.fogAlpha == nil then
-            OneWorldMapDB.features.fogAlpha = 0.50
+            OneWorldMapDB.features.fogAlpha = DEFAULT_FOG_ALPHA
         else
             OneWorldMapDB.features.fogAlpha = Clamp(OneWorldMapDB.features.fogAlpha, 0.1, 1.0)
         end
         if not OneWorldMapDB.features.fogColor then
-            OneWorldMapDB.features.fogColor = { r = 1.0, g = 1.0, b = 1.0 }
+            OneWorldMapDB.features.fogColor = CopyTable(DEFAULT_FOG_COLOR)
         end
     end
 

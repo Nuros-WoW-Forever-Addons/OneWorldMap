@@ -28,7 +28,8 @@ local defaults = {
         showCoordinates = true,
         showFlightMasters = true,
         revealFogOfWar = true,
-        fogAlpha = 0.50,
+        fogAlpha = 0.65,
+        fogColor = { r = 0.38, g = 0.38, b = 0.45 },
     },
 }
 
@@ -60,6 +61,14 @@ local function InitializeDB()
     if OneWorldMapDB and OneWorldMapDB.sidebar then
         if not OneWorldMapDB.sidebar.width or OneWorldMapDB.sidebar.width < 290 then
             OneWorldMapDB.sidebar.width = 290
+        end
+    end
+    if OneWorldMapDB and OneWorldMapDB.features then
+        if not OneWorldMapDB.features.fogColor or (OneWorldMapDB.features.fogColor.r == 1 and OneWorldMapDB.features.fogColor.g == 1 and OneWorldMapDB.features.fogColor.b == 1) then
+            OneWorldMapDB.features.fogColor = { r = 0.38, g = 0.38, b = 0.45 }
+        end
+        if OneWorldMapDB.features.fogAlpha == 0.50 then
+            OneWorldMapDB.features.fogAlpha = 0.65
         end
     end
     OneWorldMap.db = OneWorldMapDB
@@ -138,7 +147,29 @@ local function SlashCommandHandler(msg)
             OneWorldMap.MapReveal:SetAlpha(alpha)
             OneWorldMap:Log("Fog-of-War alpha set to: " .. tostring(OneWorldMapDB.features.fogAlpha))
         else
-            OneWorldMap:Log("Current Fog-of-War alpha: " .. tostring(OneWorldMapDB.features.fogAlpha or 0.50) .. " (Usage: /owm fogalpha 0.1-1.0)")
+            OneWorldMap:Log("Current Fog-of-War alpha: " .. tostring(OneWorldMapDB.features.fogAlpha or 0.65) .. " (Usage: /owm fogalpha 0.1-1.0)")
+        end
+    elseif cmd == "fogpreset" then
+        local preset = arg and arg:trim()
+        if preset and preset ~= "" and OneWorldMap.MapReveal and OneWorldMap.MapReveal.SetPreset then
+            local ok = OneWorldMap.MapReveal:SetPreset(preset)
+            if ok then
+                OneWorldMap:Log("Fog-of-War preset applied: " .. preset)
+            else
+                OneWorldMap:Log("Unknown preset '" .. preset .. "'. Available: charcoal, dark, blue, sepia, light")
+            end
+        else
+            OneWorldMap:Log("Available Fog presets: charcoal, dark, blue, sepia, light (Usage: /owm fogpreset <name>)")
+        end
+    elseif cmd == "fogcolor" then
+        local r, g, b = arg:match("^(%S+)%s+(%S+)%s+(%S+)$")
+        r, g, b = tonumber(r), tonumber(g), tonumber(b)
+        if r and g and b and OneWorldMap.MapReveal and OneWorldMap.MapReveal.SetColor then
+            OneWorldMap.MapReveal:SetColor(r, g, b)
+            OneWorldMap:Log(string.format("Fog-of-War color set to: %.2f, %.2f, %.2f", r, g, b))
+        else
+            local fc = OneWorldMapDB.features.fogColor or { r = 0.38, g = 0.38, b = 0.45 }
+            OneWorldMap:Log(string.format("Current Fog color: %.2f, %.2f, %.2f (Usage: /owm fogcolor r g b, 0.0-1.0)", fc.r, fc.g, fc.b))
         end
     else
         print("|cff00ccff[OneWorldMap]|r Available commands:")
@@ -149,6 +180,8 @@ local function SlashCommandHandler(msg)
         print("  |cffffd100/owm fade|r — Toggle movement fade")
         print("  |cffffd100/owm fog|r — Toggle Fog-of-War exploration reveal")
         print("  |cffffd100/owm fogalpha <0.1-1.0>|r — Adjust Fog-of-War opacity")
+        print("  |cffffd100/owm fogpreset <name>|r — Apply fog tint preset (charcoal, dark, blue, sepia, light)")
+        print("  |cffffd100/owm fogcolor <r g b>|r — Custom fog tint RGB (0.0 - 1.0)")
     end
 end
 
