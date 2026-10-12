@@ -85,7 +85,6 @@ function OneWorldMap.Coordinates:SuppressDefaultCoordinates()
         if f and f ~= self.frame then
             f:SetAlpha(0)
             f:Hide()
-            if f.SetScript then f:SetScript("OnUpdate", nil) end
             if not self.loggedFrames then self.loggedFrames = {} end
             if not self.loggedFrames[name] then
                 self.loggedFrames[name] = true
@@ -94,9 +93,9 @@ function OneWorldMap.Coordinates:SuppressDefaultCoordinates()
         end
     end
 
-    -- Deep scan of WorldMapFrame and ScrollContainer regions
+    -- Scan WorldMapFrame chrome regions (never traverse ScrollContainer pins/canvas)
     local function ScanContainer(container, depth)
-        if not container or depth > 4 then return end
+        if not container or depth > 3 then return end
 
         local regions = { container:GetRegions() }
         for _, r in ipairs(regions) do
@@ -128,7 +127,10 @@ function OneWorldMap.Coordinates:SuppressDefaultCoordinates()
 
         local children = { container:GetChildren() }
         for _, child in ipairs(children) do
-            if child ~= self.frame and (not OneWorldMap.Sidebar or child ~= OneWorldMap.Sidebar.frame) then
+            -- Never traverse ScrollContainer (pins/canvas), our own frame, or the sidebar
+            local isScrollContainer = WorldMapFrame and (child == WorldMapFrame.ScrollContainer)
+            local isOurFrame = (child == self.frame) or (OneWorldMap.Sidebar and child == OneWorldMap.Sidebar.frame)
+            if not isScrollContainer and not isOurFrame then
                 ScanContainer(child, depth + 1)
             end
         end
@@ -136,9 +138,6 @@ function OneWorldMap.Coordinates:SuppressDefaultCoordinates()
 
     if WorldMapFrame then
         ScanContainer(WorldMapFrame, 1)
-    end
-    if WorldMapFrame and WorldMapFrame.ScrollContainer then
-        ScanContainer(WorldMapFrame.ScrollContainer, 1)
     end
 end
 

@@ -43,30 +43,16 @@ function OneWorldMap.DoubleWide:SetupLayout()
     self.canvasWidth = (currentCanvasWidth and currentCanvasWidth > 400 and currentCanvasWidth < 850) and currentCanvasWidth or 702
 
     -- 2. Prevent Blizzard from hiding the Quest List scrollframe when details open
-    local origScrollHide = questScroll.Hide
-    questScroll.Hide = function(self)
-        if InCombatLockdown() then return origScrollHide(self) end
+    -- Use secure post-hooks so Blizzard's original methods remain untouched and untainted.
+    hooksecurefunc(questScroll, "Hide", function(self)
         if OneWorldMapDB and OneWorldMapDB.questLog and OneWorldMapDB.questLog.doubleWide and not self.allowHide then
             if detailsFrame:IsShown() then
-                return
+                self:Show()
             end
         end
-        origScrollHide(self)
-    end
+    end)
 
-    local origQuestsHide = questsFrame.Hide
-    questsFrame.Hide = function(self)
-        if InCombatLockdown() then return origQuestsHide(self) end
-        if OneWorldMapDB and OneWorldMapDB.questLog and OneWorldMapDB.questLog.doubleWide and not self.allowHide then
-            if detailsFrame:IsShown() then
-                return
-            end
-        end
-        origQuestsHide(self)
-    end
-
-    questScroll:HookScript("OnHide", function(self)
-        if InCombatLockdown() then return end
+    hooksecurefunc(questsFrame, "Hide", function(self)
         if OneWorldMapDB and OneWorldMapDB.questLog and OneWorldMapDB.questLog.doubleWide and not self.allowHide then
             if detailsFrame:IsShown() then
                 self:Show()
@@ -78,6 +64,12 @@ function OneWorldMap.DoubleWide:SetupLayout()
     if type(QuestMapFrame_ShowQuestDetails) == "function" then
         hooksecurefunc("QuestMapFrame_ShowQuestDetails", function(questID)
             if OneWorldMapDB and OneWorldMapDB.questLog and OneWorldMapDB.questLog.doubleWide then
+                if not questsFrame:IsShown() then
+                    questsFrame:Show()
+                end
+                if not questScroll:IsShown() then
+                    questScroll:Show()
+                end
                 OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
             end
         end)
@@ -101,6 +93,12 @@ function OneWorldMap.DoubleWide:SetupLayout()
 
     detailsFrame:HookScript("OnShow", function()
         if OneWorldMapDB and OneWorldMapDB.questLog and OneWorldMapDB.questLog.doubleWide then
+            if not questsFrame:IsShown() then
+                questsFrame:Show()
+            end
+            if not questScroll:IsShown() then
+                questScroll:Show()
+            end
             OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
         end
     end)
@@ -145,7 +143,19 @@ function OneWorldMap.DoubleWide:SetupLayout()
 end
 
 function OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
-    if InCombatLockdown() then return end
+    if InCombatLockdown() then
+        if not self.regenWatcher then
+            self.regenWatcher = CreateFrame("Frame")
+            self.regenWatcher:RegisterEvent("PLAYER_REGEN_ENABLED")
+            self.regenWatcher:SetScript("OnEvent", function(watcher)
+                watcher:UnregisterEvent("PLAYER_REGEN_ENABLED")
+                OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
+            end)
+        else
+            self.regenWatcher:RegisterEvent("PLAYER_REGEN_ENABLED")
+        end
+        return
+    end
 
     local wmFrame = WorldMapFrame
     local scrollContainer = wmFrame and wmFrame.ScrollContainer

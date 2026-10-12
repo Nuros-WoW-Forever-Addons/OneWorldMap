@@ -42,5 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Symmetrical 22 px Slate-Gray Gutters & Centered Scrollbars (`DoubleWide.lua`)**: Created identical 22 px wide slate-gray scrollbar track backgrounds (`ScrollGutterBg`, `0.18, 0.18, 0.20, 0.95`) on both the Quest List and Details panels. Centered both scrollbars identically at `x = 7` with uniform top/bottom limits (`y = 2` to `y = -2`, stopping at `y = 23` above the bottom border).
 - **Parchment Background Isolation (`DoubleWide.lua`)**: Constrained `DetailsFrame.Bg` to the 308 px content area (`-22 px` on the right) so the parchment texture stops before the scrollbar gutter and never bleeds behind the scrollbar.
 - **Details Bottom Action Buttons Constrained (`DoubleWide.lua`)**: Constrained `AbandonButton`, `ShareButton`, and `TrackButton` to 304 px within the 308 px content area, keeping the right 22 px gutter clear for the scrollbar and down arrow.
+- **Combat Taint & Protected Call Elimination (`DoubleWide.lua`, `Coordinates.lua`)**: Removed raw `.Hide` method overrides on `QuestsFrame` and `QuestScrollFrame` which tainted the execution stack during combat and blocked protected calls (`Button:SetPassThroughButtons()`). Replaced with non-tainting `hooksecurefunc` listeners. Excluded `WorldMapFrame.ScrollContainer` from recursive coordinate scans to prevent touching map pin widgets. Added deferred `PLAYER_REGEN_ENABLED` layout synchronization during combat lockdown.
+
 
 
