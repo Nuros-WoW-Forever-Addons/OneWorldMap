@@ -51,7 +51,9 @@ local zoneDataByUiMapID = {
             { name = "Raw Longjaw Mud Snapper", skill = 50 },
         },
         fishing = 1,
-        dungeons = {},
+        dungeons = {
+            { name = "The Hall of Thanes", minLevel = 13, maxLevel = 18 },
+        },
     },
     [1456] = { -- Thunder Bluff
         name = "Thunder Bluff",
@@ -1366,55 +1368,55 @@ local zoneDataByUiMapID = {
             { name = "Raw Nightfin Snapper", skill = 250 },
         },
         fishing = 330,
-        dungeons = {},
+        dungeons = {
+            { name = "Barrow Deeps", minLevel = 60, maxLevel = 60 },
+            { name = "Hyjal Summit", minLevel = 60, maxLevel = 60 },
+        },
     },
-    [2521] = { -- Zephras Isle
+    [2521] = { -- Zephras Isle (Skyborne Starting Zone)
         name = "Zephras Isle",
-        minLevel = 25,
-        maxLevel = 35,
+        minLevel = 1,
+        maxLevel = 12,
         herbs = {
-            { name = "Stranglekelp", skill = 85 },
-            { name = "Bruiseweed", skill = 100 },
-            { name = "Wild Steelbloom", skill = 115 },
-            { name = "Kingsblood", skill = 125 },
-            { name = "Liferoot", skill = 150 },
+            { name = "Peacebloom", skill = 1 },
+            { name = "Silverleaf", skill = 1 },
+            { name = "Earthroot", skill = 15 },
         },
         ores = {
-            { name = "Tin", skill = 65 },
-            { name = "Silver", skill = 75 },
-            { name = "Iron", skill = 125 },
-            { name = "Gold", skill = 155 },
+            { name = "Copper", skill = 1 },
         },
         skins = {
-            { name = "Medium Leather", skill = 75 },
-            { name = "Heavy Leather", skill = 150 },
+            { name = "Ruined Leather Scraps", skill = 1 },
+            { name = "Light Leather", skill = 1 },
         },
         fish = {
-            { name = "Raw Mithril Head Trout", skill = 175 },
-            { name = "Oily Blackmouth", skill = 100 },
-            { name = "Firefin Snapper", skill = 100 },
+            { name = "Raw Brilliant Smallfish", skill = 1 },
+            { name = "Raw Longjaw Mud Snapper", skill = 50 },
         },
-        fishing = 130,
+        fishing = 1,
         dungeons = {},
     },
     [2548] = { -- Riverglades
         name = "Riverglades",
         minLevel = 30,
-        maxLevel = 40,
+        maxLevel = 45,
         herbs = {
             { name = "Wild Steelbloom", skill = 115 },
             { name = "Kingsblood", skill = 125 },
             { name = "Liferoot", skill = 150 },
             { name = "Fadeleaf", skill = 160 },
             { name = "Goldthorn", skill = 170 },
+            { name = "Khadgar's Whisker", skill = 185 },
         },
         ores = {
             { name = "Iron", skill = 125 },
             { name = "Gold", skill = 155 },
             { name = "Mithril", skill = 175 },
+            { name = "Truesilver", skill = 230 },
         },
         skins = {
             { name = "Heavy Leather", skill = 150 },
+            { name = "Heavy Hide", skill = 150 },
             { name = "Thick Leather", skill = 200 },
         },
         fish = {
@@ -1422,7 +1424,9 @@ local zoneDataByUiMapID = {
             { name = "Raw Mithril Head Trout", skill = 175 },
         },
         fishing = 130,
-        dungeons = {},
+        dungeons = {
+            { name = "Krol'dok Stronghold", minLevel = 40, maxLevel = 45 },
+        },
     },
     [2652] = { -- Shen'dralas
         name = "Shen'dralas",
@@ -1462,22 +1466,143 @@ end
 -- Additional name aliases (e.g. "Stormwind" -> "Stormwind City")
 zoneDataByName["stormwind"] = zoneDataByUiMapID[1453]
 zoneDataByName["the stockade"] = zoneDataByUiMapID[1453]
+zoneDataByName["hall of thanes"] = zoneDataByUiMapID[1455]
+zoneDataByName["the hall of thanes"] = zoneDataByUiMapID[1455]
 zoneDataByName["barrens"] = zoneDataByUiMapID[1413]
 zoneDataByName["hinterlands"] = zoneDataByUiMapID[1425]
 zoneDataByName["sunken temple"] = zoneDataByUiMapID[1435]
+zoneDataByName["the riverglades"] = zoneDataByUiMapID[2548]
 
 OneWorldMap.ZoneData.byID = zoneDataByUiMapID
 OneWorldMap.ZoneData.byName = zoneDataByName
 
-function OneWorldMap:GetZoneInfo(uiMapID, zoneName)
-    if uiMapID and zoneDataByUiMapID[uiMapID] then
-        return zoneDataByUiMapID[uiMapID]
-    end
-    if zoneName then
-        local lower = zoneName:lower()
-        if zoneDataByName[lower] then
-            return zoneDataByName[lower]
+-- Cache of GroupFinderActivity dungeon level ranges from client DB2
+local lfgActivityLevelsByName = nil
+local function GetLFGActivityLevelRange(dungeonName)
+    if not dungeonName then return nil, nil end
+    if not lfgActivityLevelsByName and C_LFGList and C_LFGList.GetAvailableActivities and C_LFGList.GetActivityInfoTable then
+        lfgActivityLevelsByName = {}
+        local ok, activities = pcall(C_LFGList.GetAvailableActivities)
+        if ok and type(activities) == "table" then
+            for _, actID in ipairs(activities) do
+                local okInfo, actInfo = pcall(C_LFGList.GetActivityInfoTable, actID)
+                if okInfo and actInfo then
+                    local minL = (actInfo.minLevelSuggestion and actInfo.minLevelSuggestion > 0 and actInfo.minLevelSuggestion) or actInfo.minLevel or 1
+                    local maxL = (actInfo.maxLevelSuggestion and actInfo.maxLevelSuggestion > 0 and actInfo.maxLevelSuggestion) or minL
+                    if actInfo.shortName and actInfo.shortName ~= "" then
+                        lfgActivityLevelsByName[actInfo.shortName:lower()] = { minLevel = minL, maxLevel = maxL }
+                    end
+                    if actInfo.fullName and actInfo.fullName ~= "" then
+                        lfgActivityLevelsByName[actInfo.fullName:lower()] = { minLevel = minL, maxLevel = maxL }
+                    end
+                end
+            end
         end
     end
+    if lfgActivityLevelsByName then
+        local lower = dungeonName:lower()
+        local match = lfgActivityLevelsByName[lower] or lfgActivityLevelsByName["the " .. lower] or lfgActivityLevelsByName[lower:gsub("^the ", "")]
+        if match then
+            return match.minLevel, match.maxLevel
+        end
+    end
+    return nil, nil
+end
+
+-- Dynamically enrich zone info using the WoW Forever client's live C_Map, C_EncounterJournal, and C_LFGList DB2 tables
+local function EnrichWithLiveClientData(uiMapID, info)
+    if not uiMapID or not info then return info end
+    if info._enriched then return info end
+    info._enriched = true
+
+    -- 1. Check C_Map.IsCityMap(uiMapID)
+    if C_Map and C_Map.IsCityMap then
+        local ok, isCity = pcall(C_Map.IsCityMap, uiMapID)
+        if ok and isCity then
+            info.isCity = true
+        end
+    end
+
+    -- 2. Check C_Map.GetMapLevels(uiMapID) from client ContentTuning / UiMap DB2
+    if C_Map and C_Map.GetMapLevels and not info.isCity then
+        local ok, playerMin, playerMax = pcall(C_Map.GetMapLevels, uiMapID)
+        if ok and playerMin and playerMax and playerMin > 0 and playerMax > 0 then
+            info.minLevel = playerMin
+            info.maxLevel = playerMax
+        end
+    end
+
+    -- 3. Check C_EncounterJournal.GetDungeonEntrancesForMap(uiMapID) for any newly added dungeon pins
+    if C_EncounterJournal and C_EncounterJournal.GetDungeonEntrancesForMap then
+        local ok, entrances = pcall(C_EncounterJournal.GetDungeonEntrancesForMap, uiMapID)
+        if ok and type(entrances) == "table" and #entrances > 0 then
+            info.dungeons = info.dungeons or {}
+            local existing = {}
+            for _, d in ipairs(info.dungeons) do
+                if d.name then
+                    existing[d.name:lower()] = true
+                    existing[d.name:lower():gsub("^the ", "")] = true
+                end
+            end
+            for _, entrance in ipairs(entrances) do
+                if entrance.name and entrance.name ~= "" then
+                    local key = entrance.name:lower()
+                    local bareKey = key:gsub("^the ", "")
+                    if not existing[key] and not existing[bareKey] then
+                        local minL, maxL = GetLFGActivityLevelRange(entrance.name)
+                        table.insert(info.dungeons, {
+                            name = entrance.name,
+                            minLevel = minL or info.minLevel or 1,
+                            maxLevel = maxL or info.maxLevel or 60,
+                        })
+                        existing[key] = true
+                        existing[bareKey] = true
+                    end
+                end
+            end
+        end
+    end
+
+    return info
+end
+
+function OneWorldMap:GetZoneInfo(uiMapID, zoneName)
+    local info = nil
+    if uiMapID and zoneDataByUiMapID[uiMapID] then
+        info = zoneDataByUiMapID[uiMapID]
+    elseif zoneName then
+        local lower = zoneName:lower()
+        if zoneDataByName[lower] then
+            info = zoneDataByName[lower]
+        end
+    end
+
+    if info then
+        return EnrichWithLiveClientData(uiMapID or info.uiMapID, info)
+    end
+
+    -- Fallback for brand-new uncataloged WoW Forever zones: build dynamic entry from client DB2
+    if uiMapID and C_Map and C_Map.GetMapInfo then
+        local mapInfo = C_Map.GetMapInfo(uiMapID)
+        if mapInfo and mapInfo.name then
+            local dynamicInfo = {
+                uiMapID = uiMapID,
+                name = mapInfo.name,
+                herbs = {},
+                ores = {},
+                skins = {},
+                fish = {},
+                dungeons = {},
+            }
+            EnrichWithLiveClientData(uiMapID, dynamicInfo)
+            if dynamicInfo.isCity or dynamicInfo.minLevel or (#dynamicInfo.dungeons > 0) then
+                zoneDataByUiMapID[uiMapID] = dynamicInfo
+                zoneDataByName[mapInfo.name:lower()] = dynamicInfo
+                return dynamicInfo
+            end
+        end
+    end
+
     return nil
 end
+
