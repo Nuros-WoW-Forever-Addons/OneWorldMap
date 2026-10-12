@@ -115,6 +115,17 @@ function OneWorldMap.Shell:ResetPosition()
     OneWorldMapDB.window.scale = 1.0
 end
 
+function OneWorldMap.Shell:SetScale(scale)
+    if InCombatLockdown() then return end
+    scale = math.max(0.60, math.min(1.40, scale or 1.0))
+    OneWorldMapDB.window = OneWorldMapDB.window or {}
+    OneWorldMapDB.window.scale = scale
+    local frame = WorldMapFrame
+    if frame then
+        frame:SetScale(scale)
+    end
+end
+
 function OneWorldMap.Shell:SetupMovementFade()
     local frame = WorldMapFrame
     if not frame then return end

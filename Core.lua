@@ -73,6 +73,7 @@ local function InitializeDB()
     end
     OneWorldMap.db = OneWorldMapDB
 end
+OneWorldMap.InitializeDB = InitializeDB
 
 function OneWorldMap:Log(msg)
     local prefix = "|cff00ccff[OneWorldMap]|r "
@@ -85,7 +86,7 @@ end
 local function OnEvent(self, event, arg1)
     if event == "ADDON_LOADED" and arg1 == "OneWorldMap" then
         InitializeDB()
-        OneWorldMap:Log("v0.0.1 loaded. Type /owm for commands.")
+        OneWorldMap:Log("v0.0.1 loaded. Type /owm for options.")
     elseif event == "PLAYER_LOGIN" then
         for _, mod in ipairs(OneWorldMap.modules) do
             if type(mod.init) == "function" then
@@ -103,7 +104,11 @@ local function SlashCommandHandler(msg)
     local cmd, arg = msg:match("^(%S*)%s*(.-)$")
     cmd = cmd and cmd:lower() or ""
 
-    if cmd == "reset" then
+    if cmd == "" or cmd == "options" or cmd == "config" or cmd == "gui" or cmd == "panel" then
+        if OneWorldMap.ToggleOptionsUI then
+            OneWorldMap:ToggleOptionsUI()
+        end
+    elseif cmd == "reset" then
         OneWorldMapDB.window.point = defaults.window.point
         OneWorldMapDB.window.xOffset = defaults.window.xOffset
         OneWorldMapDB.window.yOffset = defaults.window.yOffset
@@ -173,6 +178,7 @@ local function SlashCommandHandler(msg)
         end
     else
         print("|cff00ccff[OneWorldMap]|r Available commands:")
+        print("  |cffffd100/owm|r — Open OneWorldMap Settings Panel")
         print("  |cffffd100/owm reset|r — Reset map window position and scale")
         print("  |cffffd100/owm sidebar|r — Toggle left metadata sidebar")
         print("  |cffffd100/owm coords|r — Toggle live coordinates bar")

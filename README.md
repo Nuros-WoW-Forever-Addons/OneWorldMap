@@ -12,7 +12,8 @@ Part of the **OneSuite** family of addons.
 - 🗺️ **Collapsible Zone Metadata Drawer**: Anchored to the left edge of the map frame. Automatically surfaces current zone level brackets, gathering node requirements (Herbalism, Mining, Fishing), and local dungeon level ranges, with a quick `[ < ]` toggle button.
 - 📍 **Dual Real-Time Coordinates**: High-efficiency 10 Hz throttled ticker displaying `Player: XX.X, YY.Y | Cursor: XX.X, YY.Y` with canvas bounds safety and instance protection.
 - 🪟 **Movable & Resizable Hybrid Shell**: Detaches from rigid screen constraints. Drag anywhere on the header to move, and scale freely with settings saved across sessions in `OneWorldMapDB`.
-- 🌫️ **Fog-of-War Exploration Reveal**: Renders undiscovered map terrain at a customizable opacity (default 50%), revealing roads, rivers, terrain features, and topography beneath native pins and quest blobs. Includes full database support for Classic and custom WoW Forever zones.
+- 🌫️ **Fog-of-War Exploration Reveal**: Renders undiscovered map terrain under an atmospheric desaturated charcoal/slate fog tint at customizable opacity (default 65%), revealing roads, rivers, and topography beneath native pins and quest blobs. Includes full database support for Classic and custom WoW Forever zones.
+- ⚙️ **Graphical Options Panel**: Full-featured standalone configuration window (`/owm`) and native Game Menu (`Options -> AddOns -> OneWorldMap`) with live interactive checkboxes, steppers, fog presets, and window pop-out capability.
 - 🛡️ **Zero-Taint Architecture**: Preserves Blizzard's protected action mechanics and core map event pipeline without replacing or breaking `WorldMapFrame`.
 
 ---
@@ -44,7 +45,7 @@ Then start or reload World of Warcraft (`/reload`).
 
 | Command | Description |
 |---|---|
-| `/owm` or `/oneworldmap` | Toggle OneWorldMap / show command help |
+| `/owm` or `/oneworldmap` | Open / Toggle OneWorldMap Settings Panel |
 | `/owm reset` | Reset map window position and scale to center default |
 | `/owm sidebar` | Toggle left zone metadata panel collapse state |
 | `/owm coords` | Toggle coordinate display on or off |

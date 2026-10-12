@@ -16,3 +16,4 @@ DoubleWide.lua
 Sidebar.lua
 Coordinates.lua
 MapReveal.lua
+OptionsUI.lua
