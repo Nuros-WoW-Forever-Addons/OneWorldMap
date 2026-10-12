@@ -119,7 +119,14 @@ function OneWorldMap.DoubleWide:SetupLayout()
         end)
     end
 
-    -- 4. Hook QuestMapFrame show/hide (when user collapses or expands the quest log)
+    -- 4. Pre-anchor DetailsFrame side-by-side so it is never positioned over QuestsFrame even in combat
+    local panelWidth = 330
+    detailsFrame:ClearAllPoints()
+    detailsFrame:SetPoint("TOPLEFT", qmFrame, "TOPLEFT", panelWidth, 0)
+    detailsFrame:SetPoint("BOTTOMLEFT", qmFrame, "BOTTOMLEFT", panelWidth, 0)
+    detailsFrame:SetWidth(panelWidth)
+
+    -- 5. Hook QuestMapFrame show/hide (when user collapses or expands the quest log)
     qmFrame:HookScript("OnShow", function()
         OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
     end)
@@ -134,7 +141,7 @@ function OneWorldMap.DoubleWide:SetupLayout()
         end)
     end
 
-    -- 5. Hook WorldMap OnShow to re-apply anchored layout
+    -- 6. Hook WorldMap OnShow to re-apply anchored layout
     wmFrame:HookScript("OnShow", function()
         OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
     end)
@@ -143,19 +150,6 @@ function OneWorldMap.DoubleWide:SetupLayout()
 end
 
 function OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
-    if InCombatLockdown() then
-        if not self.regenWatcher then
-            self.regenWatcher = CreateFrame("Frame")
-            self.regenWatcher:RegisterEvent("PLAYER_REGEN_ENABLED")
-            self.regenWatcher:SetScript("OnEvent", function(watcher)
-                watcher:UnregisterEvent("PLAYER_REGEN_ENABLED")
-                OneWorldMap.DoubleWide:ApplyDoubleWideLayout()
-            end)
-        else
-            self.regenWatcher:RegisterEvent("PLAYER_REGEN_ENABLED")
-        end
-        return
-    end
 
     local wmFrame = WorldMapFrame
     local scrollContainer = wmFrame and wmFrame.ScrollContainer
