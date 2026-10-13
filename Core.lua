@@ -27,6 +27,12 @@ local defaults = {
     features = {
         showCoordinates = true,
         showFlightMasters = true,
+        showQuestGivers = true,
+        showLowLevelQuests = false,
+        showBanks = true,
+        showTrainers = true,
+        showVendors = true,
+        showRepairVendors = true,
         revealFogOfWar = true,
         fogAlpha = 0.65,
         fogColor = { r = 0.38, g = 0.38, b = 0.45 },

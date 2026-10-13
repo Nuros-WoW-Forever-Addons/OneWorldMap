@@ -95,13 +95,14 @@ Spin 0.0.1-dev (Scaffold & Core Map Functionality)
 - Fog-of-War Exploration Reveal (`MapReveal.lua`, `Data/FogDataForever.lua`, `Data/FogDataStandard.lua`): Unexplored map exploration reveal module for modern Retail/Classic engine (11.x, Interface 16001). Unexplored map terrain is displayed with configurable opacity (default 50% / `fogAlpha = 0.50`) beneath native pins and quest objective blobs, showing roads, topography, and boundaries seamlessly without combat taint. Includes full tile database coverage for all 45 Classic zones, custom WoW Forever zones (Zephras Isle, Riverglades, Mount Hyjal, Shen'dralas), and standard fallback maps.
 - Graphical Options Panel (`OptionsUI.lua`): Standalone floating configuration panel (`/owm`, movable, ESC-closable) and Blizzard AddOns category (`Game Menu -> Options -> AddOns -> OneWorldMap`) with pop-out support, real-time checkboxes, steppers, presets, and live settings synchronization.
 - Complete Zone, Capital City & Dungeon Database (`Data/ZoneData.lua`, `Sidebar.lua`): Full gathering (Herbalism, Mining, Skinning, Fishing) and Dungeon level bracket coverage across all 45+ Classic zones, all 6 Capital Cities (Stormwind City with canal fishing + The Stockade, Orgrimmar with fishing + Ragefire Chasm, Ironforge, Thunder Bluff, Darnassus, Undercity), and WoW Forever custom zones (`Mount Hyjal`, `Zephras Isle`, `Riverglades`, `Shen'dralas`).
+- Custom Canvas POI Pins (`Pins.lua`, `Data/PoiData.lua`): High-performance canvas-anchored POI pins for Flight Masters (Horde, Alliance, Neutral), Quest Givers (with low-level quest thresholding and minimap tracking detection), Banks & Vaults, Class & Profession Trainers, and Vendors (General goods backpack icon vs Equipment repair anvil icon) with interactive colored tooltips and category toggles in the Options dialog.
 - Workspace Tooling: Registered `OneWorldMap` in `sync-live.sh` and `rollback-live.sh`.
 
 📋 Living Roadmap & Upcoming Backlog (Next Spins)
 Priority 1: High Priority (Immediate Next Spin)
 [ ] Live in-game verification on WoW Forever Beta (Interface 16001).
-[ ] Flight Master & Dungeon Pins (`Pins.lua`):
-    Custom canvas pins for Flight Masters (Horde, Alliance, Neutral) and dungeon entrance POIs with tooltip brackets.
+[ ] Dungeon Entrance Pins:
+    Dungeon entrance POI pins with level brackets and meeting stone indicators.
 [ ] Cave & Barrow Detection (`Interiors.lua`):
     Subzone detection with `[Cave/Dungeon Overlay]` toggle button for interior maps.
 

@@ -355,7 +355,111 @@ local function GetOrCreateUIContent()
 
     local subFog = CreateSubLabel(content, "Shrouds unexplored zones under desaturated fog while keeping roads and topography visible.", true)
     subFog:SetPoint("TOPLEFT", content, "TOPLEFT", 14, y)
+    y = y - 28
+
+    -- SECTION: Map Pins & Points of Interest
+    local bannerPOI = CreateSectionBanner(content, "Map Pins & Points of Interest")
+    bannerPOI:SetPoint("TOPLEFT", content, "TOPLEFT", 0, y)
+    y = y - 30
+
+    local cbFlight = CreateCheckbox(content, "Show Flight Masters", function()
+        return (OneWorldMapDB and OneWorldMapDB.features and OneWorldMapDB.features.showFlightMasters) ~= false
+    end, function(val)
+        OneWorldMapDB.features = OneWorldMapDB.features or {}
+        OneWorldMapDB.features.showFlightMasters = val
+        if OneWorldMap.Pins and OneWorldMap.Pins.Refresh then
+            OneWorldMap.Pins:Refresh()
+        end
+    end)
+    cbFlight:SetPoint("TOPLEFT", content, "TOPLEFT", 10, y)
+    table.insert(content.controls, cbFlight)
     y = y - 24
+
+    local cbQuests = CreateCheckbox(content, "Show Quest Givers (Available Quests)", function()
+        return (OneWorldMapDB and OneWorldMapDB.features and OneWorldMapDB.features.showQuestGivers) ~= false
+    end, function(val)
+        OneWorldMapDB.features = OneWorldMapDB.features or {}
+        OneWorldMapDB.features.showQuestGivers = val
+        if OneWorldMap.Pins and OneWorldMap.Pins.Refresh then
+            OneWorldMap.Pins:Refresh()
+        end
+    end)
+    cbQuests:SetPoint("TOPLEFT", content, "TOPLEFT", 10, y)
+    table.insert(content.controls, cbQuests)
+    y = y - 24
+
+    local cbLowLevel = CreateCheckbox(content, "Include Low-Level (Trivial) Quests", function()
+        return (OneWorldMapDB and OneWorldMapDB.features and OneWorldMapDB.features.showLowLevelQuests) == true
+    end, function(val)
+        OneWorldMapDB.features = OneWorldMapDB.features or {}
+        OneWorldMapDB.features.showLowLevelQuests = val
+        if OneWorldMap.Pins and OneWorldMap.Pins.Refresh then
+            OneWorldMap.Pins:Refresh()
+        end
+    end)
+    cbLowLevel:SetPoint("TOPLEFT", content, "TOPLEFT", 28, y)
+    table.insert(content.controls, cbLowLevel)
+    y = y - 20
+
+    local subLowLevel = CreateSubLabel(content, "Also automatically shown if Minimap 'Trivial Quests' tracking is enabled.", true)
+    subLowLevel:SetPoint("TOPLEFT", content, "TOPLEFT", 52, y)
+    y = y - 24
+
+    local cbBanks = CreateCheckbox(content, "Show Banks & Vaults", function()
+        return (OneWorldMapDB and OneWorldMapDB.features and OneWorldMapDB.features.showBanks) ~= false
+    end, function(val)
+        OneWorldMapDB.features = OneWorldMapDB.features or {}
+        OneWorldMapDB.features.showBanks = val
+        if OneWorldMap.Pins and OneWorldMap.Pins.Refresh then
+            OneWorldMap.Pins:Refresh()
+        end
+    end)
+    cbBanks:SetPoint("TOPLEFT", content, "TOPLEFT", 10, y)
+    table.insert(content.controls, cbBanks)
+    y = y - 24
+
+    local cbTrainers = CreateCheckbox(content, "Show Class & Profession Trainers", function()
+        return (OneWorldMapDB and OneWorldMapDB.features and OneWorldMapDB.features.showTrainers) ~= false
+    end, function(val)
+        OneWorldMapDB.features = OneWorldMapDB.features or {}
+        OneWorldMapDB.features.showTrainers = val
+        if OneWorldMap.Pins and OneWorldMap.Pins.Refresh then
+            OneWorldMap.Pins:Refresh()
+        end
+    end)
+    cbTrainers:SetPoint("TOPLEFT", content, "TOPLEFT", 10, y)
+    table.insert(content.controls, cbTrainers)
+    y = y - 24
+
+    local cbVendors = CreateCheckbox(content, "Show General Vendors (Bag Icon)", function()
+        return (OneWorldMapDB and OneWorldMapDB.features and OneWorldMapDB.features.showVendors) ~= false
+    end, function(val)
+        OneWorldMapDB.features = OneWorldMapDB.features or {}
+        OneWorldMapDB.features.showVendors = val
+        if OneWorldMap.Pins and OneWorldMap.Pins.Refresh then
+            OneWorldMap.Pins:Refresh()
+        end
+    end)
+    cbVendors:SetPoint("TOPLEFT", content, "TOPLEFT", 10, y)
+    table.insert(content.controls, cbVendors)
+    y = y - 24
+
+    local cbRepair = CreateCheckbox(content, "Show Repair Vendors (Anvil Icon)", function()
+        return (OneWorldMapDB and OneWorldMapDB.features and OneWorldMapDB.features.showRepairVendors) ~= false
+    end, function(val)
+        OneWorldMapDB.features = OneWorldMapDB.features or {}
+        OneWorldMapDB.features.showRepairVendors = val
+        if OneWorldMap.Pins and OneWorldMap.Pins.Refresh then
+            OneWorldMap.Pins:Refresh()
+        end
+    end)
+    cbRepair:SetPoint("TOPLEFT", content, "TOPLEFT", 10, y)
+    table.insert(content.controls, cbRepair)
+    y = y - 24
+
+    local subPOI = CreateSubLabel(content, "Canvas-anchored POI pins scale and pan smoothly with WorldMapFrame.", true)
+    subPOI:SetPoint("TOPLEFT", content, "TOPLEFT", 14, y)
+    y = y - 28
 
     content:SetHeight(math.abs(y) + 20)
     uiContentFrame = content
@@ -502,6 +606,9 @@ local function BuildStandaloneWindow()
         end
         if OneWorldMap.MapReveal and OneWorldMap.MapReveal.Refresh then
             OneWorldMap.MapReveal:Refresh()
+        end
+        if OneWorldMap.Pins and OneWorldMap.Pins.Refresh then
+            OneWorldMap.Pins:Refresh()
         end
         OptionsUI:RefreshUI()
         OneWorldMap:Log("All settings have been reset to default values.")
