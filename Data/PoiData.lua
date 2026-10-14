@@ -511,9 +511,15 @@ local poiByMapID = {
         -- Flight Masters
         { type = "flight", x = 0.525, y = 0.485, name = "Aeris Windrunner", title = "Skyborne Flight Master", faction = "Alliance" },
 
+        -- Banks
+        { type = "bank", x = 0.512, y = 0.478, name = "Zephras Vault", title = "Skyborne Banker", faction = "Alliance" },
+
         -- Quest Givers
         { type = "quest", x = 0.515, y = 0.475, name = "High Windseer Zephra", title = "The Breath of Life", level = 3, reqLevel = 1, faction = "Alliance" },
         { type = "quest", x = 0.535, y = 0.515, name = "Cloudstrider Kael", title = "Calming the Zephyrs", level = 6, reqLevel = 3, faction = "Alliance" },
+        { type = "quest", x = 0.528, y = 0.465, name = "Elder Gale", title = "A Gathering Storm", level = 8, reqLevel = 5, faction = "Alliance" },
+        { type = "quest", x = 0.508, y = 0.532, name = "Scout Breeze", title = "Raptors of the Ridge", level = 5, reqLevel = 3, faction = "Alliance" },
+        { type = "quest", x = 0.542, y = 0.495, name = "Wind Mistress Auri", title = "Feathers for the Shrine", level = 4, reqLevel = 2, faction = "Alliance" },
 
         -- Class & Profession Trainers
         { type = "trainerClass", x = 0.510, y = 0.490, name = "Zephras Champion", title = "Skyborne Class Trainer", sub = "Skyborne Sanctuary" },

@@ -235,74 +235,175 @@ function Pins:Refresh()
     local mapID = wm:GetMapID()
     if not mapID then return end
 
-    -- 1. Load curated POIs from OneWorldMap.PoiData
-    local pois = OneWorldMap:GetPoisForMap(mapID)
-    if pois and #pois > 0 then
-        for _, poi in ipairs(pois) do
-            if self:IsPoiTypeEnabled(poi.type) and self:ShouldShowQuest(poi) then
-                local pin = AcquirePin(canvas)
-                pin.poiData = poi
-                pin.normX = poi.x
-                pin.normY = poi.y
+    local feat = (OneWorldMapDB and OneWorldMapDB.features) or {}
+    local isTrackingTrivial = (C_Minimap and C_Minimap.IsTrackingHiddenQuests and C_Minimap.IsTrackingHiddenQuests()) or false
+    local allowLowLevel = (feat.showLowLevelQuests == true) or isTrackingTrivial
 
-                -- Set Texture and Size
-                if poi.type == "quest" then
-                    if poi.isLowLevel then
-                        pin.Icon:SetTexture(PIN_TEXTURES.questLowLevel)
-                        pin.Icon:SetAlpha(0.70)
-                        pin:SetSize(16, 16)
-                    else
-                        pin.Icon:SetTexture(PIN_TEXTURES.questNormal)
-                        pin.Icon:SetAlpha(1.0)
-                        pin:SetSize(18, 18)
+    local existingPositions = {}
+    local existingQuestIDs = {}
+
+    -- 1. Dynamically merge live quest offers from WoW client APIs (C_QuestLine & C_TaskQuest)
+    -- This ensures any new, modified, or custom quests in WoW Forever are discovered in real time.
+    if self:IsPoiTypeEnabled("quest") then
+        if C_QuestLine and C_QuestLine.GetAvailableQuestLines then
+            local okQL, questLines = pcall(C_QuestLine.GetAvailableQuestLines, mapID)
+            if okQL and type(questLines) == "table" then
+                for _, qInfo in ipairs(questLines) do
+                    local qID = qInfo.questID
+                    local isCompleted = C_QuestLog and C_QuestLog.IsQuestFlaggedCompleted and C_QuestLog.IsQuestFlaggedCompleted(qID)
+                    local isTrivial = qInfo.isHidden or (C_QuestLog and C_QuestLog.IsQuestTrivial and C_QuestLog.IsQuestTrivial(qID))
+
+                    if not isCompleted and (not isTrivial or allowLowLevel) then
+                        local nx, ny = qInfo.x, qInfo.y
+                        if nx and ny and nx > 0 and ny > 0 then
+                            local posKey = string.format("%.2f_%.2f", nx, ny)
+                            if not existingPositions[posKey] then
+                                local qTitle = qInfo.questName or (C_QuestLog and C_QuestLog.GetTitleForQuestID and C_QuestLog.GetTitleForQuestID(qID)) or "Available Quest"
+                                local pin = AcquirePin(canvas)
+                                pin.poiData = {
+                                    type = "quest",
+                                    name = qTitle,
+                                    title = qTitle,
+                                    questID = qID,
+                                    isLowLevel = isTrivial,
+                                    faction = "Neutral",
+                                }
+                                pin.normX = nx
+                                pin.normY = ny
+
+                                if isTrivial then
+                                    pin.Icon:SetTexture(PIN_TEXTURES.questLowLevel)
+                                    pin.Icon:SetAlpha(0.70)
+                                    pin:SetSize(16, 16)
+                                else
+                                    pin.Icon:SetTexture(PIN_TEXTURES.questNormal)
+                                    pin.Icon:SetAlpha(1.0)
+                                    pin:SetSize(18, 18)
+                                end
+
+                                existingPositions[posKey] = true
+                                if qID then existingQuestIDs[qID] = true end
+                            end
+                        end
                     end
-                elseif poi.type == "vendor" then
-                    pin.Icon:SetTexture(PIN_TEXTURES.vendor)
-                    pin.Icon:SetAlpha(0.95)
-                    pin:SetSize(16, 16)
-                elseif poi.type == "vendorRepair" then
-                    pin.Icon:SetTexture(PIN_TEXTURES.vendorRepair)
-                    pin.Icon:SetAlpha(1.0)
-                    pin:SetSize(18, 18)
-                elseif poi.type == "bank" then
-                    pin.Icon:SetTexture(PIN_TEXTURES.bank)
-                    pin.Icon:SetAlpha(1.0)
-                    pin:SetSize(18, 18)
-                elseif poi.type == "trainerClass" then
-                    pin.Icon:SetTexture(PIN_TEXTURES.trainerClass)
-                    pin.Icon:SetAlpha(1.0)
-                    pin:SetSize(17, 17)
-                elseif poi.type == "trainerProf" then
-                    pin.Icon:SetTexture(PIN_TEXTURES.trainerProf)
-                    pin.Icon:SetAlpha(1.0)
-                    pin:SetSize(17, 17)
-                elseif poi.type == "flight" then
-                    pin.Icon:SetTexture(PIN_TEXTURES.flight)
-                    pin.Icon:SetAlpha(1.0)
-                    pin:SetSize(19, 19)
-                else
-                    pin.Icon:SetTexture("Interface\\Minimap\\Tracking\\None")
-                    pin.Icon:SetAlpha(0.8)
-                    pin:SetSize(16, 16)
+                end
+            end
+        end
+
+        if C_TaskQuest and C_TaskQuest.GetQuestsForPlayerByMapID then
+            local okTQ, taskQuests = pcall(C_TaskQuest.GetQuestsForPlayerByMapID, mapID)
+            if okTQ and type(taskQuests) == "table" then
+                for _, tInfo in ipairs(taskQuests) do
+                    local qID = tInfo.questId or tInfo.questID
+                    local isCompleted = C_QuestLog and C_QuestLog.IsQuestFlaggedCompleted and C_QuestLog.IsQuestFlaggedCompleted(qID)
+                    local isTrivial = C_QuestLog and C_QuestLog.IsQuestTrivial and C_QuestLog.IsQuestTrivial(qID)
+
+                    if not isCompleted and (not isTrivial or allowLowLevel) then
+                        local nx, ny = tInfo.x, tInfo.y
+                        if nx and ny and nx > 0 and ny > 0 then
+                            local posKey = string.format("%.2f_%.2f", nx, ny)
+                            if not existingPositions[posKey] and (not qID or not existingQuestIDs[qID]) then
+                                local qTitle = (C_TaskQuest.GetQuestInfoByQuestID and C_TaskQuest.GetQuestInfoByQuestID(qID)) or
+                                              (C_QuestLog and C_QuestLog.GetTitleForQuestID and C_QuestLog.GetTitleForQuestID(qID)) or "Available Task"
+                                local pin = AcquirePin(canvas)
+                                pin.poiData = {
+                                    type = "quest",
+                                    name = qTitle,
+                                    title = qTitle,
+                                    questID = qID,
+                                    isLowLevel = isTrivial,
+                                    faction = "Neutral",
+                                }
+                                pin.normX = nx
+                                pin.normY = ny
+
+                                if isTrivial then
+                                    pin.Icon:SetTexture(PIN_TEXTURES.questLowLevel)
+                                    pin.Icon:SetAlpha(0.70)
+                                    pin:SetSize(16, 16)
+                                else
+                                    pin.Icon:SetTexture(PIN_TEXTURES.questNormal)
+                                    pin.Icon:SetAlpha(1.0)
+                                    pin:SetSize(18, 18)
+                                end
+
+                                existingPositions[posKey] = true
+                                if qID then existingQuestIDs[qID] = true end
+                            end
+                        end
+                    end
                 end
             end
         end
     end
 
-    -- 2. Dynamically merge live Taxi Nodes from C_TaxiMap if available
+    -- 2. Load curated POIs from OneWorldMap.PoiData (Cities, hubs, banks, trainers, vendors, starter quests)
+    local pois = OneWorldMap:GetPoisForMap(mapID)
+    if pois and #pois > 0 then
+        for _, poi in ipairs(pois) do
+            if self:IsPoiTypeEnabled(poi.type) and self:ShouldShowQuest(poi) then
+                local posKey = string.format("%.2f_%.2f", poi.x, poi.y)
+                local isDuplicateQuest = (poi.type == "quest") and (existingPositions[posKey] or (poi.questID and existingQuestIDs[poi.questID]))
+
+                if not isDuplicateQuest then
+                    local pin = AcquirePin(canvas)
+                    pin.poiData = poi
+                    pin.normX = poi.x
+                    pin.normY = poi.y
+
+                    -- Set Texture and Size
+                    if poi.type == "quest" then
+                        if poi.isLowLevel then
+                            pin.Icon:SetTexture(PIN_TEXTURES.questLowLevel)
+                            pin.Icon:SetAlpha(0.70)
+                            pin:SetSize(16, 16)
+                        else
+                            pin.Icon:SetTexture(PIN_TEXTURES.questNormal)
+                            pin.Icon:SetAlpha(1.0)
+                            pin:SetSize(18, 18)
+                        end
+                    elseif poi.type == "vendor" then
+                        pin.Icon:SetTexture(PIN_TEXTURES.vendor)
+                        pin.Icon:SetAlpha(0.95)
+                        pin:SetSize(16, 16)
+                    elseif poi.type == "vendorRepair" then
+                        pin.Icon:SetTexture(PIN_TEXTURES.vendorRepair)
+                        pin.Icon:SetAlpha(1.0)
+                        pin:SetSize(18, 18)
+                    elseif poi.type == "bank" then
+                        pin.Icon:SetTexture(PIN_TEXTURES.bank)
+                        pin.Icon:SetAlpha(1.0)
+                        pin:SetSize(18, 18)
+                    elseif poi.type == "trainerClass" then
+                        pin.Icon:SetTexture(PIN_TEXTURES.trainerClass)
+                        pin.Icon:SetAlpha(1.0)
+                        pin:SetSize(17, 17)
+                    elseif poi.type == "trainerProf" then
+                        pin.Icon:SetTexture(PIN_TEXTURES.trainerProf)
+                        pin.Icon:SetAlpha(1.0)
+                        pin:SetSize(17, 17)
+                    elseif poi.type == "flight" then
+                        pin.Icon:SetTexture(PIN_TEXTURES.flight)
+                        pin.Icon:SetAlpha(1.0)
+                        pin:SetSize(19, 19)
+                    else
+                        pin.Icon:SetTexture("Interface\\Minimap\\Tracking\\None")
+                        pin.Icon:SetAlpha(0.8)
+                        pin:SetSize(16, 16)
+                    end
+
+                    existingPositions[posKey] = true
+                end
+            end
+        end
+    end
+
+    -- 3. Dynamically merge live Taxi Nodes from C_TaxiMap if available
     if self:IsPoiTypeEnabled("flight") and C_TaxiMap and C_TaxiMap.GetTaxiNodesForMap and C_TaxiMap.ShouldMapShowTaxiNodes then
         local okShow, shouldShow = pcall(C_TaxiMap.ShouldMapShowTaxiNodes, mapID)
         if okShow and shouldShow then
             local okNodes, taxiNodes = pcall(C_TaxiMap.GetTaxiNodesForMap, mapID)
             if okNodes and type(taxiNodes) == "table" then
-                -- Check for existing flight masters to avoid duplicate blips
-                local existingPositions = {}
-                for _, p in ipairs(activePins) do
-                    if p.poiData and p.poiData.type == "flight" then
-                        existingPositions[string.format("%.2f_%.2f", p.normX, p.normY)] = true
-                    end
-                end
-
                 for _, node in ipairs(taxiNodes) do
                     if node.position then
                         local nx, ny = node.position.x, node.position.y
@@ -336,15 +437,19 @@ function Pins:Init()
     local wm = WorldMapFrame
     if not wm then return end
 
-    -- Hook map display changes
-    hooksecurefunc(wm, "OnMapChanged", function()
+    -- Hook map display changes & request live quest lines from server
+    local function OnMapUpdated()
+        local currentMapID = wm:GetMapID()
+        if currentMapID and C_QuestLine and C_QuestLine.RequestQuestLinesForMap then
+            pcall(C_QuestLine.RequestQuestLinesForMap, currentMapID)
+        end
         Pins:Refresh()
-    end)
+    end
+
+    hooksecurefunc(wm, "OnMapChanged", OnMapUpdated)
 
     if wm.SetMapID then
-        hooksecurefunc(wm, "SetMapID", function()
-            Pins:Refresh()
-        end)
+        hooksecurefunc(wm, "SetMapID", OnMapUpdated)
     end
 
     if wm.RefreshAllDataProviders then
@@ -379,6 +484,8 @@ function Pins:Init()
     eventFrame:RegisterEvent("PLAYER_LEVEL_UP")
     eventFrame:RegisterEvent("QUEST_ACCEPTED")
     eventFrame:RegisterEvent("QUEST_TURNED_IN")
+    eventFrame:RegisterEvent("QUEST_LOG_UPDATE")
+    eventFrame:RegisterEvent("QUESTLINE_UPDATE")
     eventFrame:RegisterEvent("CVAR_UPDATE")
     eventFrame:RegisterEvent("MINIMAP_UPDATE_TRACKING")
     eventFrame:SetScript("OnEvent", function(self, event, ...)
