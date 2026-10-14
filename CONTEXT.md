@@ -8,9 +8,8 @@
 - **Current Version**: 0.0.1-dev
 - **Suite**: Part of the **OneSuite** family
 - **GitHub Repository**:
-  - Exists: FALSE
+  - Exists: TRUE
   - URL: https://github.com/Nuros-WoW-Forever-Addons/OneWorldMap
-  *(Initialize with Exists: FALSE until first commit/push)*
 - **Branching Policy**: All new features must be developed on a branch != `main` (active branch: `dev`)
 - **Live Sync Path**: `/Applications/World of Warcraft/_classic_beta_/Interface/AddOns/OneWorldMap/`
 - **Rollback Target**: Initial repository scaffold commit
