@@ -35,7 +35,6 @@ Use provided DoubleQuestPaneRender.png as a layout reference view.  Replace Play
 - `DoubleWide.lua`: Quest frame layout engine. Decouples `QuestMapFrame.DetailsFrame` from overlapping `QuestMapFrame.QuestsFrame`, anchoring them side-by-side in persistent dual columns while hiding the redundant `< Back` button.
 - `Sidebar.lua`: Left metadata drawer frame. Houses zone level brackets, gathering node thresholds, fishing requirements, and dungeon entrance listings with a bottom-left `[ < ]` toggle button.
 - `MapReveal.lua`: Fog-of-War exploration provider using `MapCanvasDataProviderMixin` to draw desaturated, semi-transparent un-shrouded terrain tiles beneath quest objective blobs.
-- `Pins.lua`: Navigation pins engine for Flight Masters (Horde, Alliance, Neutral) and dungeon entrance POIs with tooltip brackets.
 - `Coordinates.lua`: Throttled 10 Hz ticker bar displaying live `Player: XX.X, YY.Y | Cursor: XX.X, YY.Y` with canvas bounds validation.
 - `Interiors.lua`: Sub-zone and `areaID` heuristic detection for expansive caves/barrows, rendering a `[Cave/Dungeon Overlay]` toggle button for interior map switching.
 - `Data/ZoneData.lua`: Static database table indexed by `uiMapID` containing level ranges, gathering minimums, fishing thresholds, and cave map definitions.
@@ -68,8 +67,6 @@ OneWorldMapDB = {
             revealFogOfWar = true,
             fogAlpha = 0.50,
             showCoordinates = true,
-            showFlightMasters = true,
-            showDungeonPins = true,
             detectCaves = true,
         },
     }
@@ -94,7 +91,6 @@ Spin 0.0.1-dev (Scaffold & Core Map Functionality)
 - Fog-of-War Exploration Reveal (`MapReveal.lua`, `Data/FogDataForever.lua`, `Data/FogDataStandard.lua`): Unexplored map exploration reveal module for modern Retail/Classic engine (11.x, Interface 16001). Unexplored map terrain is displayed with configurable opacity (default 50% / `fogAlpha = 0.50`) beneath native pins and quest objective blobs, showing roads, topography, and boundaries seamlessly without combat taint. Includes full tile database coverage for all 45 Classic zones, custom WoW Forever zones (Zephras Isle, Riverglades, Mount Hyjal, Shen'dralas), and standard fallback maps.
 - Graphical Options Panel (`OptionsUI.lua`): Standalone floating configuration panel (`/owm`, movable, ESC-closable) and Blizzard AddOns category (`Game Menu -> Options -> AddOns -> OneWorldMap`) with pop-out support, real-time checkboxes, steppers, presets, and live settings synchronization.
 - Complete Zone, Capital City & Dungeon Database (`Data/ZoneData.lua`, `Sidebar.lua`): Full gathering (Herbalism, Mining, Skinning, Fishing) and Dungeon level bracket coverage across all 45+ Classic zones, all 6 Capital Cities (Stormwind City with canal fishing + The Stockade, Orgrimmar with fishing + Ragefire Chasm, Ironforge, Thunder Bluff, Darnassus, Undercity), and WoW Forever custom zones (`Mount Hyjal`, `Zephras Isle`, `Riverglades`, `Shen'dralas`).
-- Custom Canvas POI Pins (`Pins.lua`, `Data/PoiData.lua`): High-performance canvas-anchored POI pins for Flight Masters (Horde, Alliance, Neutral), Quest Givers (with low-level quest thresholding and minimap tracking detection), Banks & Vaults, Class & Profession Trainers, and Vendors (General goods backpack icon vs Equipment repair anvil icon) with interactive colored tooltips and category toggles in the Options dialog.
 - Workspace Tooling: Registered `OneWorldMap` in `sync-live.sh` and `rollback-live.sh`.
 
 📋 Living Roadmap & Upcoming Backlog (Next Spins)
