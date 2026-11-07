@@ -74,9 +74,62 @@ local function InitializeDB()
 end
 OneWorldMap.InitializeDB = InitializeDB
 
+-- Print helper routing to 'OneAddon' chat tab
+local function GetOneAddonChatFrame()
+    local targetName = "OneAddon"
+    for i = 1, (NUM_CHAT_WINDOWS or 10) do
+        local name = GetChatWindowInfo(i)
+        if name == targetName then
+            local cf = _G["ChatFrame" .. i]
+            if cf then
+                local tab = _G["ChatFrame" .. i .. "Tab"]
+                if tab then
+                    tab:Show()
+                    if PanelTemplates_TabResize then
+                        pcall(PanelTemplates_TabResize, tab, 0)
+                    end
+                end
+                return cf
+            end
+        end
+    end
+    if FCF_OpenNewWindow then
+        local frame = FCF_OpenNewWindow(targetName)
+        if frame then
+            if FCF_DockFrame and GENERAL_CHAT_DOCK then
+                local docked = (FCFDock_GetChatFrames and FCFDock_GetChatFrames(GENERAL_CHAT_DOCK)) or (GENERAL_CHAT_DOCK and GENERAL_CHAT_DOCK.DOCKED_CHAT_FRAMES) or {}
+                pcall(FCF_DockFrame, frame, #docked + 1, false)
+            end
+            if ChatFrame_RemoveAllMessageGroups then pcall(ChatFrame_RemoveAllMessageGroups, frame) end
+            if ChatFrame_RemoveAllChannels then pcall(ChatFrame_RemoveAllChannels, frame) end
+            if FCF_DockUpdate then pcall(FCF_DockUpdate) end
+            local id = frame.GetID and frame:GetID()
+            if id then
+                local tab = _G["ChatFrame" .. id .. "Tab"]
+                if tab then
+                    tab:Show()
+                    if PanelTemplates_TabResize then pcall(PanelTemplates_TabResize, tab, 0) end
+                end
+            end
+            if FCF_SelectDockFrame and DEFAULT_CHAT_FRAME then pcall(FCF_SelectDockFrame, DEFAULT_CHAT_FRAME) end
+            return frame
+        end
+    end
+    return DEFAULT_CHAT_FRAME or ChatFrame1
+end
+OneWorldMap.GetChatFrame = GetOneAddonChatFrame
+
 function OneWorldMap:Log(msg)
+    local frame = GetOneAddonChatFrame()
     local prefix = "|cff00ccff[OneWorldMap]|r "
-    print(prefix .. tostring(msg))
+    local text = prefix .. tostring(msg)
+    if frame and frame.AddMessage then
+        frame:AddMessage(text)
+    elseif DEFAULT_CHAT_FRAME and DEFAULT_CHAT_FRAME.AddMessage then
+        DEFAULT_CHAT_FRAME:AddMessage(text)
+    else
+        print(text)
+    end
     if _G.OneSwatter and _G.OneSwatter.LogDebug then
         _G.OneSwatter:LogDebug("OneWorldMap", tostring(msg))
     end
@@ -85,7 +138,6 @@ end
 local function OnEvent(self, event, arg1)
     if event == "ADDON_LOADED" and arg1 == "OneWorldMap" then
         InitializeDB()
-        OneWorldMap:Log("v0.0.1 loaded. Type /owm for options.")
     elseif event == "PLAYER_LOGIN" then
         for _, mod in ipairs(OneWorldMap.modules) do
             if type(mod.init) == "function" then
@@ -93,6 +145,17 @@ local function OnEvent(self, event, arg1)
                 if not success then
                     OneWorldMap:Log("Error initializing module " .. mod.name .. ": " .. tostring(err))
                 end
+            end
+        end
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        if not OneWorldMap.welcomePrinted then
+            OneWorldMap.welcomePrinted = true
+            if C_Timer and C_Timer.After then
+                C_Timer.After(0.4, function()
+                    OneWorldMap:Log("v0.0.2 loaded. Type /owm for options.")
+                end)
+            else
+                OneWorldMap:Log("v0.0.2 loaded. Type /owm for options.")
             end
         end
     end
@@ -176,23 +239,24 @@ local function SlashCommandHandler(msg)
             OneWorldMap:Log(string.format("Current Fog color: %.2f, %.2f, %.2f (Usage: /owm fogcolor r g b, 0.0-1.0)", fc.r, fc.g, fc.b))
         end
     else
-        print("|cff00ccff[OneWorldMap]|r Available commands:")
-        print("  |cffffd100/owm|r — Open OneWorldMap Settings Panel")
-        print("  |cffffd100/owm reset|r — Reset map window position and scale")
-        print("  |cffffd100/owm sidebar|r — Toggle left metadata sidebar")
-        print("  |cffffd100/owm coords|r — Toggle live coordinates bar")
-        print("  |cffffd100/owm doublewide|r — Toggle DoubleWide quest log")
-        print("  |cffffd100/owm fade|r — Toggle movement fade")
-        print("  |cffffd100/owm fog|r — Toggle Fog-of-War exploration reveal")
-        print("  |cffffd100/owm fogalpha <0.1-1.0>|r — Adjust Fog-of-War opacity")
-        print("  |cffffd100/owm fogpreset <name>|r — Apply fog tint preset (charcoal, dark, blue, sepia, light)")
-        print("  |cffffd100/owm fogcolor <r g b>|r — Custom fog tint RGB (0.0 - 1.0)")
+        OneWorldMap:Log("Available commands:")
+        OneWorldMap:Log("  |cffffd100/owm|r — Open OneWorldMap Settings Panel")
+        OneWorldMap:Log("  |cffffd100/owm reset|r — Reset map window position and scale")
+        OneWorldMap:Log("  |cffffd100/owm sidebar|r — Toggle left metadata sidebar")
+        OneWorldMap:Log("  |cffffd100/owm coords|r — Toggle live coordinates bar")
+        OneWorldMap:Log("  |cffffd100/owm doublewide|r — Toggle DoubleWide quest log")
+        OneWorldMap:Log("  |cffffd100/owm fade|r — Toggle movement fade")
+        OneWorldMap:Log("  |cffffd100/owm fog|r — Toggle Fog-of-War exploration reveal")
+        OneWorldMap:Log("  |cffffd100/owm fogalpha <0.1-1.0>|r — Adjust Fog-of-War opacity")
+        OneWorldMap:Log("  |cffffd100/owm fogpreset <name>|r — Apply fog tint preset (charcoal, dark, blue, sepia, light)")
+        OneWorldMap:Log("  |cffffd100/owm fogcolor <r g b>|r — Custom fog tint RGB (0.0 - 1.0)")
     end
 end
 
 local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("ADDON_LOADED")
 eventFrame:RegisterEvent("PLAYER_LOGIN")
+eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 eventFrame:SetScript("OnEvent", OnEvent)
 
 SLASH_ONEWORLDMAP1 = "/oneworldmap"

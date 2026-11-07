@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.0.2] - 2026-11-06
+### Added
+- **OneAddon Chat Tab Integration**:
+  - Automatically routes all addon prints, slash command feedback, and module status logs to the dedicated `"OneAddon"` chat tab instead of General chat.
+  - Automatically creates and docks the `"OneAddon"` chat tab if missing, keeping public chat channels isolated.
+- **Settled Startup Announcement**:
+  - Deferred initial startup announcement to `PLAYER_ENTERING_WORLD` with a `C_Timer.After(0.4)` delay, ensuring Blizzard chat frame docking and tabs are fully settled before printing.
+
 ## [0.0.1] - 2026-10-11
 ### Added
 - **Initial Addon Scaffolding**: Setup `OneWorldMap.toc` with multi-client interface targets (16001, 11200, 20400, 30300, 110000) and `OneWorldMapDB` SavedVariables.

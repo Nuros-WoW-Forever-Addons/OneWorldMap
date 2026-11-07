@@ -2,7 +2,7 @@
 ## Title: OneWorldMap
 ## Notes: Modular hybrid World Map shell with DoubleWide Quest Log, Zone Metadata Sidebar, and Live Coordinates.
 ## Author: Antigravity
-## Version: 0.0.1
+## Version: 0.0.2
 ## IconTexture: Interface\Icons\inv_misc_map02
 ## SavedVariables: OneWorldMapDB
 ## OptionalDeps: OnePanelUtils, OneSwatter

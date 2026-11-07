@@ -5,13 +5,13 @@
 ## 🎯 Overview & Scope
 
 - **Addon Name**: OneWorldMap
-- **Current Version**: 0.0.1-dev
+- **Current Version**: 0.0.2
 - **Suite**: Part of the **OneSuite** family
 - **GitHub Repository**:
   - Exists: TRUE
   - URL: https://github.com/Nuros-WoW-Forever-Addons/OneWorldMap
 - **Branching Policy**: All new features must be developed on a branch != `main` (active branch: `dev`)
-- **Live Sync Path**: `/Applications/World of Warcraft/_classic_beta_/Interface/AddOns/OneWorldMap/`
+- **Live Sync Path**: `/Applications/World of Warcraft/_forever_/Interface/AddOns/OneWorldMap/`
 - **Rollback Target**: Initial repository scaffold commit
 - **Release Package**: `.github/workflows/package.yml` generates `OneWorldMap-latest.zip` on push to `main`
 - **Target WoW Runtimes**: WoW Forever Beta (v1.60.1 / Interface 16001), Vanilla 1.12 (`11200`), Turtle WoW 1.16, Modern Classic Engines
@@ -81,6 +81,13 @@ Move completed tasks from Upcoming Backlog to Recent Completed Work.
 If user-facing features or commands changed, update README.md and append a new section in CHANGELOG.md.
 Document newly discovered backlog items or engine edge cases in Upcoming Backlog.
 ✅ Recent Completed Work (Latest Spins)
+
+Spin 0.0.2 (OneAddon Chat Tab Integration)
+- Added automatic `"OneAddon"` chat tab integration:
+  - Ensured standalone tab creation, docked to `GENERAL_CHAT_DOCK` with public channel isolation.
+  - Routed all `OneWorldMap:Log` feedback, slash command output, and module errors to `"OneAddon"` tab instead of General chat.
+  - Deferred initial startup announcement to `PLAYER_ENTERING_WORLD` with a `C_Timer.After(0.4)` settling delay.
+
 Spin 0.0.1-dev (Scaffold & Core Map Functionality)
 - Addon Structure: Created `OneWorldMap.toc`, `Core.lua`, and `Data/ZoneData.lua` baseline.
 - Shell Frame & Positioning Engine (`Shell.lua`): Movable WorldMapFrame with position/scale persistence (`OneWorldMapDB.window`) and non-intrusive movement fade.
